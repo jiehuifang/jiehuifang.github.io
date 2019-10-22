@@ -11,8 +11,11 @@
             <p>
                 <a href="javascript:void(0)" onclick="show_tool_1()">1. print diff lines </a>
             </p>
+            <p>
+                <a href="javascript:void(0)" onclick="show_tool_2()">2. format string match sql in operator </a>
+            </p>
         </div>
-        <!-- 2. print diff lines div -->
+        <!-- 1. print diff lines div -->
         <div id="tool_1" style="display:none">
             <p>1. print diff lines</p>
             <p>
@@ -40,12 +43,33 @@
                 <input value="clean data" type="button" onclick="clean_tool_1()">
             </div>
         </div>
+        <!-- 2. format string match sql in operator -->
+        <div id="tool_2" style="display:none">
+            <p>2. format string match sql in operator</p>
+            <p>
+                <a href="javascript:void(0)" onclick="show_index()">back to the index</a>
+            </p>
+            <br>
+            <div>
+                <!-- before format string -->
+                <textarea id="before_string" rows="13" cols="30" placeholder="input list of string"></textarea>
+                <!-- after format string -->
+                <textarea id="after_string" rows="13" cols="30" placeholder="show formatted string" readonly></textarea>
+            </div>
+            <div>
+                <!-- button -->
+                <input value="format string" type="button" onclick="format_string()">
+                <input value="clean data" type="button" onclick="clean_tool_2()">
+            </div>
+        </div>
     </body>
     <script>
         //index function ---
         function show_index(){
             clean_tool_1();
+            clean_tool_2();
             document.getElementById("tool_1").style.display='none';
+            document.getElementById("tool_2").style.display='none';
             document.getElementById("index").style.display='inline';
         }
         //tool 1 function ---
@@ -110,6 +134,25 @@
             document.getElementById("textarea_only_aa").innerHTML=aa_only;
             document.getElementById("textarea_only_bb").innerHTML=bb_only;
             document.getElementById("textarea_share").innerHTML=share;
+        }
+        //tool 2 function ---
+        function clean_tool_2(){
+            document.getElementById("after_string").innerHTML='';
+            document.getElementById("before_string").value='';
+        }
+        function show_tool_2(){
+            document.getElementById("index").style.display='none';
+            document.getElementById("tool_2").style.display='inline';
+        }
+        function format_string(){
+            //clean history
+            document.getElementById("after_string").innerHTML='';
+            let before_string=document.getElementById("before_string").value.split('\n');
+            let after_string=new String();
+            before_string.forEach((element)=>{
+                after_string=after_string+'\''+element+'\','+'\n';
+            });
+            document.getElementById("after_string").innerHTML=after_string;
         }
     </script>
 </html>
