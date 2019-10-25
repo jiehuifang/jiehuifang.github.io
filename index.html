@@ -152,6 +152,7 @@
             before_string.forEach((element)=>{
                 after_string=after_string+'\''+element+'\','+'\n';
             });
+            after_string=after_string.substr(0,after_string.length-2);
             document.getElementById("after_string").innerHTML=after_string;
         }
     </script>
