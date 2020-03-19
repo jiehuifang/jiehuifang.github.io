@@ -3,6 +3,8 @@
     <head>
         <title>Web Tools</title>
         <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
+        <!-- axios -->
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     </head>
     <!-- body content -->
     <body id="body" style="text-align: center;">
@@ -17,6 +19,9 @@
             </p>
             <p>
                 <a href="javascript:void(0)" onclick="show_tool_3()">3. decode url string </a>
+            </p>
+            <p>
+                <a href="javascript:void(0)" onclick="show_tool_4()">4. show trade </a>
             </p>
         </div>
         <!-- 1. print diff lines div -->
@@ -85,6 +90,32 @@
                 <input value="clean data" type="button" onclick="clean_tool_3()">
             </div>
         </div>
+        <!-- 4. show trade -->
+        <div id="tool_4" style="display:none">
+            <p>4. show trade </p>
+            <p>
+                <a href="javascript:void(0)" onclick="show_index()">back to the index</a>
+            </p>
+            <br>
+            <div>
+                <select id="trade_select_code"> 
+                    <option value ="s_sh" selected>s_sh</option>
+                    <option value ="s_sz">s_sz</option>
+                  </select>
+            </div>
+            <br>
+            <div>
+                <textarea id="trade_code" rows="5" cols="9" placeholder="input code"></textarea>
+            </div>
+            <div>
+                <textarea id="trade_result" rows="20" cols="27" placeholder="show result" readonly></textarea>
+            </div>
+            <div>
+                <!-- button -->
+                <input value="refresh" type="button" onclick="trade_refresh()">
+                <input value="stop" type="button" onclick="stopInterval()">
+            </div>
+        </div>
     </body>
     <script>
         //index function ---
@@ -92,9 +123,11 @@
             clean_tool_1();
             clean_tool_2();
             clean_tool_3();
+            clean_tool_4();
             document.getElementById("tool_1").style.display='none';
             document.getElementById("tool_2").style.display='none';
             document.getElementById("tool_3").style.display='none';
+            document.getElementById("tool_4").style.display='none';
             document.getElementById("index").style.display='inline';
         }
         //tool 1 function ---
@@ -191,6 +224,59 @@
         }
         function decode_string(){
             document.getElementById("after_decode_string").innerHTML=decodeURIComponent(document.getElementById("before_decode_string").value);
+        }
+        //tool 4 function ---
+        var codes;
+        var code;
+        var refreshInterval;
+        let instance=axios.create({
+            //腾讯 tx
+            baseURL:'http://qt.gtimg.cn'//v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
+        });
+        function refreshfun4(){
+            console.log('refresh run: '+codes);
+            try{
+                document.getElementById("trade_result").innerHTML='';
+                codes.forEach((element)=>{
+                    instance.get('/q='+code+element).then((res)=>{
+                        let data=res.data.split('~');
+                        let tx_data=data[2]+'  '+data[3]+'  '+data[4]+'  '+data[5]+'%'
+                        if(document.getElementById("trade_result").innerHTML!=''){
+                            document.getElementById("trade_result").innerHTML=document.getElementById("trade_result").innerHTML+'\n'+tx_data;
+                        }else{
+                            document.getElementById("trade_result").innerHTML=tx_data;
+                        }
+                    }).catch((e)=>{console.log(e)});
+                });
+            }catch(err){
+                console.log(err);
+                stopInterval();
+            }
+        }
+        function stopInterval(){
+            if(refreshInterval!=undefined||refreshInterval!=null){
+                clearInterval(refreshInterval);
+                refreshInterval=null;
+            }
+        }
+        function clean_tool_4(){
+            stopInterval();
+            codes=null;
+            code=null;
+            document.getElementById("trade_result").innerHTML='';
+            document.getElementById("trade_code").value='';
+        }
+        function show_tool_4(){
+            document.getElementById("index").style.display='none';
+            document.getElementById("tool_4").style.display="inline";
+        }
+        function trade_refresh(){
+            //clean history
+            document.getElementById("trade_result").innerHTML='';
+            stopInterval();
+            codes=document.getElementById("trade_code").value.split('\n');
+            code=document.getElementById("trade_select_code").value;
+            refreshInterval=setInterval(refreshfun4,3000)
         }
     </script>
 </html>
