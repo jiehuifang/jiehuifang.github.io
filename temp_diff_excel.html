@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Diff Excel</title>
+    <script src="https://cdn.bootcss.com/xlsx/0.12.6/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+</head>
+<body>
+<div id="app">
+    <select v-model="mode">
+        <option selected>交投对账</option>
+    </select>
+    <input id="file_1" type="file" @change="parseFile($event,1)" />
+    <input id="file_2" type="file" @change="parseFile($event,2)" />
+    <button @click="diff(1)">售票对比</button>
+    <button @click="diff(0)">退票对比</button>
+    <button @click="clean_data">清空数据</button>
+    <div v-if="wb_1!==null">
+        <hr/>
+        <p>{{wb_1_name}}---数据条数:{{wb_1_data.length}}</p>
+        <p v-if="sum_amount_wb1!==null">{{wb_1_name}}---金额为:{{sum_amount_wb1}}</p>
+    </div>
+    <div v-if="wb_2!==null">
+        <hr/>
+        <p>{{wb_2_name}}---数据条数:{{wb_2_data.length}}</p>
+        <p v-if="sum_amount_wb2!==null">{{wb_2_name}}---金额为:{{sum_amount_wb2}}</p>
+    </div>
+    <div v-if="only_wb1!==null&&only_wb1.length!==0">
+        <hr/>
+        <p>{{wb_1_name}}---金额:{{only_wb1_sum_amount}}---订单数:{{only_wb1.length}}</p>
+        <table title="only_wb1" border="1">
+            <tr>
+                <th>订单号</th>
+                <th>金额</th>
+            </tr>
+            <tr>
+            <tr v-for="item in only_wb1">
+                <td>{{item.NO}}</td>
+                <td>{{item.AMOUNT}}</td>
+            </tr>
+            </tr>
+        </table>
+    </div>
+    <div v-if="only_wb2!==null&&only_wb2.length!==0">
+        <hr/>
+        <p>{{wb_2_name}}---金额:{{only_wb2_sum_amount}}---订单数:{{only_wb2.length}}</p>
+        <table title="only_wb2" border="1">
+            <tr>
+                <th>订单号</th>
+                <th>金额</th>
+            </tr>
+            <tr>
+            <tr v-for="item in only_wb2">
+                <td>{{item.NO}}</td>
+                <td>{{item.AMOUNT}}</td>
+            </tr>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    var schema={
+        "交投对账":{
+            "wb1":{
+                "single":false,
+                "field":[{
+                    "unique":"车站订单号",
+                    "number":"退还乘客票款"
+                },{
+                    "unique":"车站订单号",
+                    "number":"实际购票价"
+                }]
+            },
+            "wb2":{
+                "single":true,
+                "field":[{
+                    "unique":"订单号",
+                    "number":function(e){
+                        return parseFloat(e["退票总金额（含燃油附加费）"])-parseFloat(e.退票手续费);
+                    }
+                },{
+                    "unique":"订单号",
+                    "number":"订单总价"
+                }]
+            }
+        },
+    };
+    var app=new Vue({
+        el:'#app',
+        data:{
+            //glabal
+            mode:"交投对账",
+            //wb_1
+            wb_1:null,
+            wb_1_name:null,
+            wb_1_data:null,
+            only_wb1:null,
+            only_wb1_sum_amount:null,
+            sum_amount_wb1:null,
+            //wb_2
+            wb_2:null,
+            wb_2_name:null,
+            wb_2_data:null,
+            only_wb2:null,
+            only_wb2_sum_amount:null,
+            sum_amount_wb2:null
+        },
+        methods:{
+            clean_data(){
+                window.location.reload();
+            },
+            parseFile(files,id) {
+                let t=this;
+                let f=files.target.files[0];
+                t['wb_'+id+'_name']=f.name;
+                let reader=new FileReader();
+                reader.onload=function(e) {
+                    let data=e.target.result;
+                    t['wb_'+id] = XLSX.read(data, {type : 'binary'});
+                    t['wb_'+id+'_data']=XLSX.utils.sheet_to_json(t['wb_'+id].Sheets[t['wb_'+id].SheetNames[0]]);
+                };
+                reader.readAsBinaryString(f);
+            },
+            fill(t,id,flag,countMap){
+                let tempMap=new Map();
+                let unique;
+                let number;
+                t['sum_amount_wb'+id]=0;
+                if(schema[t.mode]['wb'+id].single){
+                    t['wb_'+id+'_data'].forEach(e=>{
+                        number=typeof schema[t.mode]['wb'+id].field[flag].number != 'string'?schema[t.mode]['wb'+id].field[flag].number(e):e[schema[t.mode]['wb'+id].field[flag].number];
+                        unique=typeof schema[t.mode]['wb'+id].field[flag].unique != 'string'?schema[t.mode]['wb'+id].field[flag].unique(e):e[schema[t.mode]['wb'+id].field[flag].unique];
+                        countMap.set(unique+"_"+parseFloat(number),countMap.get(unique+"_"+parseFloat(number))===undefined?
+                            1:countMap.get(unique+"_"+parseFloat(number))+1);
+                        tempMap.set(unique,0);
+                        t['sum_amount_wb'+id]=t['sum_amount_wb'+id]+parseFloat(number);
+                    });
+                }else{
+                    t['wb_'+id+'_data'].forEach(e=>{
+                        number=typeof schema[t.mode]['wb'+id].field[flag].number != 'string'?schema[t.mode]['wb'+id].field[flag].number(e):e[schema[t.mode]['wb'+id].field[flag].number];
+                        unique=typeof schema[t.mode]['wb'+id].field[flag].unique != 'string'?schema[t.mode]['wb'+id].field[flag].unique(e):e[schema[t.mode]['wb'+id].field[flag].unique];
+                        tempMap.set(unique,tempMap.get(unique)===undefined?parseFloat(number):tempMap.get(unique)+parseFloat(number));
+                    });
+                    tempMap.forEach((v,k)=>{
+                        countMap.set(k+"_"+v,countMap.get(k+"_"+v)===undefined?1:countMap.get(k+"_"+v)+1);
+                        t['sum_amount_wb'+id]=t['sum_amount_wb'+id]+v;
+                    });
+                }
+                return tempMap;
+            },
+            diff(flag){
+                let t=this;
+                let count_diff_map=new Map();
+                let temp_wb1=t.fill(t,1,flag,count_diff_map);
+                let temp_wb2=t.fill(t,2,flag,count_diff_map);
+                t.only_wb1=new Array();
+                t.only_wb2=new Array();
+                t.only_wb1_sum_amount=0;
+                t.only_wb2_sum_amount=0;
+                let tempArr;
+                count_diff_map.forEach((v,k)=>{
+                    tempArr=k.split("_");
+                    if(v!==2){
+                        if(temp_wb1.get(tempArr[0])!==undefined&&temp_wb2.get(tempArr[0])===undefined){
+                            t.only_wb1.push({
+                                "NO":tempArr[0],
+                                "AMOUNT":tempArr[1]
+                            });
+                            t.only_wb1_sum_amount=t.only_wb1_sum_amount+parseFloat(tempArr[1]);
+                        }
+                        if(temp_wb1.get(tempArr[0])===undefined&&temp_wb2.get(tempArr[0])!==undefined){
+                            t.only_wb2.push({
+                                "NO":tempArr[0],
+                                "AMOUNT":tempArr[1]
+                            });
+                            t.only_wb2_sum_amount=t.only_wb2_sum_amount+parseFloat(tempArr[1]);
+                        }
+                    }
+                });
+            }
+        }
+    });
+</script>
+</html>
