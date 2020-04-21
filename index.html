@@ -98,12 +98,6 @@
             </p>
             <br>
             <div>
-                <select id="trade_select_code"> 
-                    <option value ="s_sh" selected>s_sh</option>
-                    <option value ="s_sz">s_sz</option>
-                  </select>
-            </div>
-            <div>
                 <textarea id="trade_code" rows="5" cols="30" placeholder="input code"></textarea>
             </div>
             <div>
@@ -226,7 +220,6 @@
         }
         //tool 4 function ---
         var codes;
-        var code;
         var refreshInterval;
         let instance=axios.create({
             //腾讯 tx
@@ -237,7 +230,7 @@
             try{
                 document.getElementById("trade_result").innerHTML='';
                 codes.forEach((element)=>{
-                    instance.get('/q='+code+element).then((res)=>{
+                    instance.get('/q='+element).then((res)=>{
                         let data=res.data.split('~');
                         let tx_data=data[2]+'  '+data[3]+'  '+data[4]+'  '+data[5]+'%'
                         if(document.getElementById("trade_result").innerHTML!=''){
@@ -261,7 +254,6 @@
         function clean_tool_4(){
             stopInterval();
             codes=null;
-            code=null;
             document.getElementById("trade_result").innerHTML='';
             document.getElementById("trade_code").value='';
         }
@@ -274,7 +266,6 @@
             document.getElementById("trade_result").innerHTML='';
             stopInterval();
             codes=document.getElementById("trade_code").value.split('\n');
-            code=document.getElementById("trade_select_code").value;
             refreshInterval=setInterval(refreshfun4,3000)
         }
     </script>
