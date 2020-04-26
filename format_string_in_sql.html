@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <title>Format String In SQL</title>
+    <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
+</head>
+<body style="text-align: center">
+<!-- Format String In SQL -->
+<div>
+    <p>Format String In SQL</p>
+    <p>
+        <a href="https://jiehuifang.github.io/">back to the contents</a>
+    </p>
+    <br>
+    <div>
+        <!-- before format string -->
+        <textarea id="before_string" rows="13" cols="30" placeholder="input list of string"></textarea>
+        <!-- after format string -->
+        <textarea id="after_string" rows="13" cols="30" placeholder="show formatted string" readonly></textarea>
+    </div>
+    <div>
+        <!-- button -->
+        <input value="format string" type="button" onclick="format_string()">
+        <input value="clean data" type="button" onclick="clean()">
+    </div>
+</div>
+</body>
+<script>
+    function clean() {
+        document.getElementById("after_string").innerHTML = '';
+        document.getElementById("before_string").value = '';
+    }
+
+    function format_string() {
+        //clean history
+        document.getElementById("after_string").innerHTML = '';
+        let before_string = document.getElementById("before_string").value.split('\n');
+        let after_string = '';
+        before_string.forEach((element) => {
+            after_string = after_string + '\'' + element + '\',' + '\n';
+        });
+        after_string = after_string.substr(0, after_string.length - 2);
+        document.getElementById("after_string").innerHTML = after_string;
+    }
+</script>
+</html>
