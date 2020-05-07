@@ -3,11 +3,14 @@
 <head>
     <title>CN Trade</title>
     <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
+    <link rel="stylesheet" href="https://jiehuifang.github.io/webTools.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 </head>
-<body style="text-align: center">
+<body>
 <!-- CN Trade -->
-<div>
+<div id="app" align="center">
     <p>CN Trade </p>
     <p>
         <a href="https://jiehuifang.github.io/">back to the contents</a>
@@ -16,60 +19,68 @@
     <div>
         <textarea id="trade_code" rows="5" cols="30" placeholder="input code"></textarea>
     </div>
-    <div>
-        <textarea id="trade_result" rows="5" cols="30" placeholder="show result" readonly></textarea>
-    </div>
+    <br>
     <div>
         <!-- button -->
-        <input value="refresh" type="button" onclick="trade_refresh()">
-        <input value="stop" type="button" onclick="stopInterval()">
+        <button @click="trade_refresh()">refresh</button>
+        <button @click="stopInterval()">stop</button>
     </div>
+    <br>
+    <table v-if="Object.keys(codeList).length!==0">
+        <tr v-for="(value,key) in codeList">
+            <td>{{key}}</td>
+            <td>{{value}}</td>
+        </tr>
+    </table>
 </div>
 </body>
 <script>
-    let codes;
-    let refreshInterval;
-    let instance = axios.create({
-        //腾讯 tx
-        baseURL: 'https://qt.gtimg.cn'//v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
+    let app = new Vue({
+        el: "#app",
+        data: {
+            codeList: {},
+            instance: axios.create({
+                //腾讯 tx
+                baseURL: 'https://qt.gtimg.cn'//v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
+            }),
+            refreshInterval: null,
+        },
+        methods: {
+            trade_refresh() {
+                let t = this;
+                t.stopInterval();
+                document.getElementById("trade_code").value.split('\n').forEach(i => {
+                    Vue.set(t.codeList, i, "loading")
+                })
+                t.refreshInterval = setInterval(t.refreshFun, 3000)
+            },
+            stopInterval() {
+                let t = this;
+                console.log('stop fetch：' + Object.keys(t.codeList));
+                if (t.refreshInterval !== undefined && t.refreshInterval !== null) {
+                    clearInterval(t.refreshInterval);
+                    t.refreshInterval = null;
+                }
+            },
+            refreshFun() {
+                let t = this;
+                console.log('start fetch: ' + Object.keys(t.codeList));
+                try {
+                    Object.keys(t.codeList).forEach((element) => {
+                        t.instance.get('/q=' + element).then((res) => {
+                            let data = res.data.split('~');
+                            let tx_data = data[3] + '  ' + data[4] + '  ' + data[5] + '%'
+                            Vue.set(t.codeList, element, tx_data);
+                        }).catch((e) => {
+                            console.log(e)
+                        });
+                    });
+                } catch (err) {
+                    console.log(err);
+                    t.stopInterval();
+                }
+            }
+        }
     });
-
-    function refreshFun() {
-        console.log('refresh run: ' + codes);
-        try {
-            document.getElementById("trade_result").innerHTML = '';
-            codes.forEach((element) => {
-                instance.get('/q=' + element).then((res) => {
-                    let data = res.data.split('~');
-                    let tx_data = data[2] + '  ' + data[3] + '  ' + data[4] + '  ' + data[5] + '%'
-                    if (document.getElementById("trade_result").innerHTML !== '') {
-                        document.getElementById("trade_result").innerHTML = document.getElementById("trade_result").innerHTML + '\n' + tx_data;
-                    } else {
-                        document.getElementById("trade_result").innerHTML = tx_data;
-                    }
-                }).catch((e) => {
-                    console.log(e)
-                });
-            });
-        } catch (err) {
-            console.log(err);
-            stopInterval();
-        }
-    }
-
-    function stopInterval() {
-        if (refreshInterval !== undefined && refreshInterval !== null) {
-            clearInterval(refreshInterval);
-            refreshInterval = null;
-        }
-    }
-
-    function trade_refresh() {
-        //clean history
-        document.getElementById("trade_result").innerHTML = '';
-        stopInterval();
-        codes = document.getElementById("trade_code").value.split('\n');
-        refreshInterval = setInterval(refreshFun, 3000)
-    }
 </script>
 </html>
