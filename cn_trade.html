@@ -49,6 +49,7 @@
             trade_refresh() {
                 let t = this;
                 t.stopInterval();
+                t.codeList = {};
                 document.getElementById("trade_code").value.split('\n').forEach(i => {
                     Vue.set(t.codeList, i, "loading")
                 })
