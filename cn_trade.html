@@ -17,7 +17,7 @@
     </p>
     <br>
     <div>
-        <textarea id="trade_code" rows="5" cols="30" placeholder="input code"></textarea>
+        <textarea id="trade_code" rows="5" cols="30" placeholder="input code" v-model="inputCodes"></textarea>
     </div>
     <br>
     <div>
@@ -38,6 +38,7 @@
     let app = new Vue({
         el: "#app",
         data: {
+            inputCodes: "",
             codeList: {},
             instance: axios.create({
                 //腾讯 tx
@@ -45,14 +46,24 @@
             }),
             refreshInterval: null,
         },
+        created() {
+            let t = this;
+            let storage = window.localStorage;
+            if (!storage) return false;
+            t.inputCodes = storage.getItem("web_tool_cn_trade_code");
+        },
         methods: {
             trade_refresh() {
                 let t = this;
+                let storage = window.localStorage;
+                if (storage) storage.setItem("web_tool_cn_trade_code", t.inputCodes);
+                if (t.inputCodes === '') {
+                    alert("input code is empty!")
+                    return;
+                }
                 t.stopInterval();
                 t.codeList = {};
-                document.getElementById("trade_code").value.split('\n').forEach(i => {
-                    Vue.set(t.codeList, i, "loading")
-                })
+                t.inputCodes.split('\n').forEach(i => Vue.set(t.codeList, i, "loading"))
                 t.refreshInterval = setInterval(t.refreshFun, 3000)
             },
             stopInterval() {
