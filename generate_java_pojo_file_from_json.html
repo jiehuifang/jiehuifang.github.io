@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <title>Generate Java POJO File From Json</title>
+    <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
+    <link rel="stylesheet" href="https://jiehuifang.github.io/webTools.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head>
+
+<body>
+    <div id="app">
+        <p>Generate Java POJO File From Json</p>
+        <p>
+            <a href="https://jiehuifang.github.io/">back to the contents</a>
+        </p>
+        <br>
+        <div>
+            <textarea id="json_schema" rows="50" cols="100" placeholder="json schema area"></textarea>
+            <textarea id="java_schema" rows="50" cols="100" placeholder="java schema area" readonly></textarea>
+        </div>
+        <br>
+        <div>
+            <!-- button -->
+            <button onclick="generate()">generate</button>
+            <button onclick="clean()">clean</button>
+        </div>
+    </div>
+</body>
+<script>
+    // Java Type Constant Area
+    const private_access_type = "private ";
+    const integer_type = "private Integer ";
+    const double_type = "private Double ";
+    const boolean_type = "private Boolean ";
+    const string_type = "private String ";
+    const list_type = "private List ";
+    const map_type = "private Map ";
+    const object_type = "private Object ";
+
+    // Java Class Constant Area
+    const class_type = "public class {0} {\n\n";
+    const java_line_end_symbol = ";\n\n";
+    const java_class_file_end_symbol = "}";
+    const java_tab_symbol = "    ";
+    const java_item_class_suffix = "Item";
+    const single_class_symbol = "\n\n";
+    const between_word_symbol = " ";
+
+    //global var
+    let handle_stack;
+
+    function clean() {
+        document.getElementById("java_schema").innerHTML = '';
+        document.getElementById("json_schema").value = '';
+    }
+
+    // replace placeholder function
+    String.prototype.format = function () {
+        if (arguments.length == 0) return this;
+        let param = arguments[0];
+        let s = this;
+        if (typeof (param) == 'object') {
+            for (let k in param)
+                s = s.replace(new RegExp("\\{" + k + "\\}", "g"), param[k]);
+        } else {
+            for (let i = 0; i < arguments.length; i++)
+                s = s.replace(new RegExp("\\{" + i + "\\}", "g"), arguments[i]);
+        }
+        return s;
+    }
+
+    // generate function
+    function generate() {
+        try {
+            let json_schema_text = document.getElementById("json_schema").value;
+            let json_schema_obj = JSON.parse(json_schema_text);
+            handle_stack = [];
+            handle_stack.push({ "name": "Root", "obj": json_schema_obj });
+            let java_schema_text = "";
+            while (handle_stack.length > 0) {
+                java_schema_text = java_schema_text + packageJavaObject(handle_stack.pop()) + single_class_symbol;
+            }
+            document.getElementById("java_schema").innerHTML = java_schema_text;
+        } catch (e) {
+            console.log(e);
+            alert("illegal json schema");
+        }
+    }
+
+    // package java object
+    function packageJavaObject({ name, obj }) {
+        let result = class_type.format(name);
+        let isMap = false;
+        for (let k in obj) {
+            if (typeof (obj[k]) == 'string')
+                result = result + java_tab_symbol + string_type + k + java_line_end_symbol;
+            else if (typeof (obj[k]) == 'boolean')
+                result = result + java_tab_symbol + boolean_type + k + java_line_end_symbol;
+            else if (typeof (obj[k]) == 'number')
+                if (obj[k].toString().includes("."))
+                    result = result + java_tab_symbol + double_type + k + java_line_end_symbol;
+                else
+                    result = result + java_tab_symbol + integer_type + k + java_line_end_symbol;
+            else if (obj[k] instanceof Array) {
+                result = result + java_tab_symbol + list_type + k + java_line_end_symbol;
+                if (typeof (obj[k][0]) == 'object') {
+                    handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k][0] });
+                }
+            } else if (typeof (obj[k]) == 'object') {
+                for (kk in obj[k]) {
+                    if (!isNaN(Number(kk))) {
+                        isMap = true;
+                        break;
+                    }
+                }
+                if (isMap) {
+                    result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
+                } else {
+                    result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix + between_word_symbol + k + java_line_end_symbol;
+                    handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k] });
+                }
+            } else {
+                result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
+            }
+        }
+        return result + java_class_file_end_symbol;
+    }
+</script>
+
+</html>
