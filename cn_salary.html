@@ -11,13 +11,13 @@
 
 <body>
     <!-- CN Salary -->
-    <div id="app" align="center">
+    <div id="app">
         <p>CN Salary </p>
         <p>
             <a href="https://jiehuifang.github.io/">back to the contents</a>
         </p>
         <br>
-        <table>
+        <table border="1">
             <tr>
                 <th>税前工资</th>
                 <th>社会保险缴费基数</th>
@@ -29,7 +29,7 @@
                 <td><input v-model="fund_base"></td>
             </tr>
         </table>
-        <br>
+        <hr>
         <table border="1">
             <tr>
                 <th>企业养老保险缴费</th>
@@ -59,7 +59,7 @@
                 <td>{{company_sum.toFixed(2)}}¥</td>
             </tr>
         </table>
-        <br>
+        <hr>
         <table border="1">
             <tr>
                 <th>个人养老保险缴费</th>
