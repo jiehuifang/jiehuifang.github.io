@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <title>Diff Excel</title>
@@ -9,76 +10,77 @@
     <script src="https://cdn.bootcss.com/xlsx/0.12.6/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 </head>
+
 <body>
-<!-- Diff Excel -->
-<div id="app" align="center">
-    <p>Diff Excel</p>
-    <p>
-        <a href="https://jiehuifang.github.io/">back to the contents</a>
-    </p>
-    <br>
-    <p>
-        导入方案模式：
-        <select v-model="import_mode">
-            <option>LOCAL</option>
-            <option>REMOTE</option>
-        </select>
-    </p>
-    <p v-if="import_mode==='LOCAL'">
-        导入本地方案：<input type="file" @change="import_local_schema($event)">
-    </p>
-    <p v-if="import_mode==='REMOTE'">
-        远程方案路径:
-        <input v-model="remote_schema_path" type="text" placeholder="http://">
-        <button @click="import_remote_schema()">加载</button>
-    </p>
-    <p>
-        选择Excel对比方案：
-        <select v-model="current_schema">
-            <option v-for="(value,key) in schema">{{key}}</option>
-        </select>
-        <select v-if="current_schema!==null&&current_schema!==''" v-model="current_method">
-            <option v-for="method in current_methods">{{method}}</option>
-        </select>
-    </p>
-    <div v-if="current_schema!==null&&current_schema!==''">
+    <!-- Diff Excel -->
+    <div id="app" align="center">
+        <p>Diff Excel</p>
         <p>
-            {{current_schema}} ({{Object.keys(current_diff_obj).length}}方对比)
+            <a href="https://jiehuifang.github.io/">back to the contents</a>
         </p>
-        <p v-for="(value,obj) in current_diff_obj">
-            {{obj}}：<input type="file" @change="parseFile($event,obj)" multiple/>
+        <br>
+        <p>
+            导入方案模式：
+            <select v-model="import_mode">
+                <option>LOCAL</option>
+                <option>REMOTE</option>
+            </select>
         </p>
-    </div>
-    <div v-if="Object.keys(file_name).length!==0" v-for="(value,key) in file_name">
-        <p v-if="typeof file_data[key] === 'object'">{{key}} (LOADED {{file_data[key].length}} ROWS)</p>
-    </div>
-    <p>
-        <button @click="diff()">对比</button>
-        <button @click="clean_data">清空数据</button>
-    </p>
-    <div v-if="Object.keys(result_sum).length!==0" v-for="(value,key) in result_sum">
-        <p>{{key}} (SUM VALUE {{value.toFixed(2)}})</p>
-    </div>
-    <div v-if="Object.keys(result_diff).length!==0" v-for="(value,key) in result_diff">
-        <div v-if="value.only_sum!==0&&value.only_content.length!==0">
-            <hr>
-            <p>{{key}} (DIFF COUNT {{value.only_content.length}})</p>
-            <p>{{key}} (DIFF SUM VALUE {{value.only_sum.toFixed(2)}})</p>
-            <table border="1">
-                <tr>
-                    <th>INDEX</th>
-                    <th>ID</th>
-                    <th>VALUE</th>
-                </tr>
-                <tr v-for="(item,index) in value.only_content">
-                    <td>{{index+1}}</td>
-                    <td>{{item.ID}}</td>
-                    <td>{{item.VALUE}}</td>
-                </tr>
-            </table>
+        <p v-if="import_mode==='LOCAL'">
+            导入本地方案：<input type="file" @change="import_local_schema($event)">
+        </p>
+        <p v-if="import_mode==='REMOTE'">
+            远程方案路径:
+            <input v-model="remote_schema_path" type="text" placeholder="http://">
+            <button @click="import_remote_schema()">加载</button>
+        </p>
+        <p>
+            选择Excel对比方案：
+            <select v-model="current_schema">
+                <option v-for="(value,key) in schema">{{key}}</option>
+            </select>
+            <select v-if="current_schema!==null&&current_schema!==''" v-model="current_method">
+                <option v-for="method in current_methods">{{method}}</option>
+            </select>
+        </p>
+        <div v-if="current_schema!==null&&current_schema!==''">
+            <p>
+                {{current_schema}} ({{Object.keys(current_diff_obj).length}}方对比)
+            </p>
+            <p v-for="(value,obj) in current_diff_obj">
+                {{obj}}：<input type="file" @change="parseFile($event,obj)" multiple />
+            </p>
+        </div>
+        <div v-if="Object.keys(file_name).length!==0" v-for="(value,key) in file_name">
+            <p v-if="typeof file_data[key] === 'object'">{{key}} (LOADED {{file_data[key].length}} ROWS)</p>
+        </div>
+        <p>
+            <button @click="diff()">对比</button>
+            <button @click="clean_data">清空数据</button>
+        </p>
+        <div v-if="Object.keys(result_sum).length!==0" v-for="(value,key) in result_sum">
+            <p>{{key}} (SUM VALUE {{value.toFixed(2)}})</p>
+        </div>
+        <div v-if="Object.keys(result_diff).length!==0" v-for="(value,key) in result_diff">
+            <div v-if="value.only_sum!==0&&value.only_content.length!==0">
+                <hr>
+                <p>{{key}} (DIFF COUNT {{value.only_content.length}})</p>
+                <p>{{key}} (DIFF SUM VALUE {{value.only_sum.toFixed(2)}})</p>
+                <table border="1">
+                    <tr>
+                        <th>INDEX</th>
+                        <th>ID</th>
+                        <th>VALUE</th>
+                    </tr>
+                    <tr v-for="(item,index) in value.only_content">
+                        <td>{{index+1}}</td>
+                        <td>{{item.ID}}</td>
+                        <td>{{item.VALUE}}</td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 </body>
 <script type="text/javascript">
     let app = new Vue({
@@ -281,7 +283,7 @@
                     Vue.set(t.file_name, id + "_" + tag, tag);
                     let reader = new FileReader();
                     reader.onload = function (e) {
-                        let data = XLSX.read(e.target.result, {type: 'binary'});
+                        let data = XLSX.read(e.target.result, { type: 'binary' });
                         Vue.set(t.file_data, id + "_" + tag, XLSX.utils.sheet_to_json(data.Sheets[data.SheetNames[0]]));
                     };
                     reader.readAsBinaryString(file);
@@ -345,4 +347,5 @@
         }
     });
 </script>
+
 </html>

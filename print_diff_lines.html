@@ -1,42 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <title>Print Diff Lines</title>
     <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
     <link rel="stylesheet" href="https://jiehuifang.github.io/webTools.css">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
+
 <body style="text-align: center">
-<!-- Print Diff Lines -->
-<div>
-    <p>Print Diff Lines</p>
-    <p>
-        <a href="https://jiehuifang.github.io/">back to the contents</a>
-    </p>
-    <br>
+    <!-- Print Diff Lines -->
     <div>
-        <!-- aa textarea -->
-        <textarea id="textarea_aa" rows="13" cols="30"
-                  placeholder="aa textarea , please input some string on diff lines"></textarea>
-        <!-- bb textarea -->
-        <textarea id="textarea_bb" rows="13" cols="30"
-                  placeholder="bb textarea , please input some string on diff lines"></textarea>
+        <p>Print Diff Lines</p>
+        <p>
+            <a href="https://jiehuifang.github.io/">back to the contents</a>
+        </p>
+        <br>
+        <div>
+            <!-- aa textarea -->
+            <textarea id="textarea_aa" rows="13" cols="30"
+                placeholder="aa textarea , please input some string on diff lines"></textarea>
+            <!-- bb textarea -->
+            <textarea id="textarea_bb" rows="13" cols="30"
+                placeholder="bb textarea , please input some string on diff lines"></textarea>
+        </div>
+        <div>
+            <!-- share textarea-->
+            <textarea id="textarea_share" rows="13" cols="30" placeholder="share lines" readonly></textarea>
+            <!-- only aa textarea -->
+            <textarea id="textarea_only_aa" rows="13" cols="30" placeholder="only in aa textarea" readonly></textarea>
+            <!-- only bb textarea -->
+            <textarea id="textarea_only_bb" rows="13" cols="30" placeholder="only in bb textarea" readonly></textarea>
+        </div>
+        <div>
+            <!-- button -->
+            <input value="print diff" type="button" onclick="print_diff(false)">
+            <input value="print diff with count" type="button" onclick="print_diff(true)">
+            <input value="clean data" type="button" onclick="clean()">
+        </div>
     </div>
-    <div>
-        <!-- share textarea-->
-        <textarea id="textarea_share" rows="13" cols="30" placeholder="show share lines" readonly></textarea>
-        <!-- only aa textarea -->
-        <textarea id="textarea_only_aa" rows="13" cols="30" placeholder="show only in aa textarea" readonly></textarea>
-        <!-- only bb textarea -->
-        <textarea id="textarea_only_bb" rows="13" cols="30" placeholder="show only in bb textarea" readonly></textarea>
-    </div>
-    <div>
-        <!-- button -->
-        <input value="print diff" type="button" onclick="print_diff(false)">
-        <input value="print diff with count" type="button" onclick="print_diff(true)">
-        <input value="clean data" type="button" onclick="clean()">
-    </div>
-</div>
 </body>
 <script>
     function clean() {
@@ -99,4 +101,5 @@
         document.getElementById("textarea_share").innerHTML = share;
     }
 </script>
+
 </html>

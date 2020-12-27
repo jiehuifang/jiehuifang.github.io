@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <title>CN Salary</title>
     <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
@@ -7,98 +8,99 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 </head>
+
 <body>
-<!-- CN Salary -->
-<div id="app" align="center">
-    <p>CN Salary </p>
-    <p>
-        <a href="https://jiehuifang.github.io/">back to the contents</a>
-    </p>
-    <br>
-    <table>
-        <tr>
-            <th>税前工资</th>
-            <th>社会保险缴费基数</th>
-            <th>住房公积金缴费基数</th>
-        </tr>
-        <tr>
-            <td><input v-model="pre_tax"></td>
-            <td><input v-model="insurance_base"></td>
-            <td><input v-model="fund_base"></td>
-        </tr>
-    </table>
-    <br>
-    <table border="1">
-        <tr>
-            <th>企业养老保险缴费</th>
-            <th>企业医疗保险缴费</th>
-            <th>企业工伤保险缴费</th>
-            <th>企业失业保险缴费</th>
-            <th>企业生育保险缴费</th>
-            <th>企业住房公积金缴费</th>
-            <th>企业总缴费</th>
-        </tr>
-        <tr>
-            <td><input v-model="endowment_insurance_company"></td>
-            <td><input v-model="medical_insurance_company"></td>
-            <td><input v-model="employment_injury_insurance_company"></td>
-            <td><input v-model="unemployment_insurance_company"></td>
-            <td><input v-model="maternity_insurance_company"></td>
-            <td><input v-model="housing_provident_fund_company"></td>
-            <td>/</td>
-        </tr>
-        <tr>
-            <td>{{(parseFloat(endowment_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(medical_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(employment_injury_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(unemployment_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(maternity_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(housing_provident_fund_company)*parseFloat(fund_base)).toFixed(2)}}¥</td>
-            <td>{{company_sum.toFixed(2)}}¥</td>
-        </tr>
-    </table>
-    <br>
-    <table border="1">
-        <tr>
-            <th>个人养老保险缴费</th>
-            <th>个人医疗保险缴费</th>
-            <th>个人工伤保险缴费</th>
-            <th>个人失业保险缴费</th>
-            <th>个人生育保险缴费</th>
-            <th>个人住房公积金缴费</th>
-            <th>个人总缴费</th>
-        </tr>
-        <tr>
-            <td><input v-model="endowment_insurance_person"></td>
-            <td><input v-model="medical_insurance_person"></td>
-            <td><input v-model="employment_injury_insurance_person"></td>
-            <td><input v-model="unemployment_insurance_person"></td>
-            <td><input v-model="maternity_insurance_person"></td>
-            <td><input v-model="housing_provident_fund_person"></td>
-            <td>/</td>
-        </tr>
-        <tr>
-            <td>{{(parseFloat(endowment_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(medical_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(employment_injury_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(unemployment_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(maternity_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(housing_provident_fund_person)*parseFloat(fund_base)).toFixed(2)}}¥</td>
-            <td>{{person_sum.toFixed(2)}}¥</td>
-        </tr>
-    </table>
-    <hr>
-    <table border="1">
-        <tr>
-            <th>企业雇佣成本</th>
-            <th>个人工资(未扣除个人所得税)</th>
-        </tr>
-        <tr>
-            <td>{{(parseFloat(pre_tax)+company_sum).toFixed(2)}}¥</td>
-            <td>{{(parseFloat(pre_tax)-person_sum).toFixed(2)}}¥</td>
-        </tr>
-    </table>
-</div>
+    <!-- CN Salary -->
+    <div id="app" align="center">
+        <p>CN Salary </p>
+        <p>
+            <a href="https://jiehuifang.github.io/">back to the contents</a>
+        </p>
+        <br>
+        <table>
+            <tr>
+                <th>税前工资</th>
+                <th>社会保险缴费基数</th>
+                <th>住房公积金缴费基数</th>
+            </tr>
+            <tr>
+                <td><input v-model="pre_tax"></td>
+                <td><input v-model="insurance_base"></td>
+                <td><input v-model="fund_base"></td>
+            </tr>
+        </table>
+        <br>
+        <table border="1">
+            <tr>
+                <th>企业养老保险缴费</th>
+                <th>企业医疗保险缴费</th>
+                <th>企业工伤保险缴费</th>
+                <th>企业失业保险缴费</th>
+                <th>企业生育保险缴费</th>
+                <th>企业住房公积金缴费</th>
+                <th>企业总缴费</th>
+            </tr>
+            <tr>
+                <td><input v-model="endowment_insurance_company"></td>
+                <td><input v-model="medical_insurance_company"></td>
+                <td><input v-model="employment_injury_insurance_company"></td>
+                <td><input v-model="unemployment_insurance_company"></td>
+                <td><input v-model="maternity_insurance_company"></td>
+                <td><input v-model="housing_provident_fund_company"></td>
+                <td>/</td>
+            </tr>
+            <tr>
+                <td>{{(parseFloat(endowment_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(medical_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(employment_injury_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(unemployment_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(maternity_insurance_company)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(housing_provident_fund_company)*parseFloat(fund_base)).toFixed(2)}}¥</td>
+                <td>{{company_sum.toFixed(2)}}¥</td>
+            </tr>
+        </table>
+        <br>
+        <table border="1">
+            <tr>
+                <th>个人养老保险缴费</th>
+                <th>个人医疗保险缴费</th>
+                <th>个人工伤保险缴费</th>
+                <th>个人失业保险缴费</th>
+                <th>个人生育保险缴费</th>
+                <th>个人住房公积金缴费</th>
+                <th>个人总缴费</th>
+            </tr>
+            <tr>
+                <td><input v-model="endowment_insurance_person"></td>
+                <td><input v-model="medical_insurance_person"></td>
+                <td><input v-model="employment_injury_insurance_person"></td>
+                <td><input v-model="unemployment_insurance_person"></td>
+                <td><input v-model="maternity_insurance_person"></td>
+                <td><input v-model="housing_provident_fund_person"></td>
+                <td>/</td>
+            </tr>
+            <tr>
+                <td>{{(parseFloat(endowment_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(medical_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(employment_injury_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(unemployment_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(maternity_insurance_person)*parseFloat(insurance_base)).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(housing_provident_fund_person)*parseFloat(fund_base)).toFixed(2)}}¥</td>
+                <td>{{person_sum.toFixed(2)}}¥</td>
+            </tr>
+        </table>
+        <hr>
+        <table border="1">
+            <tr>
+                <th>企业雇佣成本</th>
+                <th>个人工资(未扣除个人所得税)</th>
+            </tr>
+            <tr>
+                <td>{{(parseFloat(pre_tax)+company_sum).toFixed(2)}}¥</td>
+                <td>{{(parseFloat(pre_tax)-person_sum).toFixed(2)}}¥</td>
+            </tr>
+        </table>
+    </div>
 </body>
 <script>
     let app = new Vue({
@@ -146,4 +148,5 @@
         }
     });
 </script>
+
 </html>

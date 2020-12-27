@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <title>CN Trade</title>
     <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.githubassets.com/favicon.ico">
@@ -8,31 +9,32 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
 </head>
+
 <body>
-<!-- CN Trade -->
-<div id="app" align="center">
-    <p>CN Trade </p>
-    <p>
-        <a href="https://jiehuifang.github.io/">back to the contents</a>
-    </p>
-    <br>
-    <div>
-        <textarea id="trade_code" rows="5" cols="30" placeholder="input code" v-model="inputCodes"></textarea>
+    <!-- CN Trade -->
+    <div id="app" align="center">
+        <p>CN Trade </p>
+        <p>
+            <a href="https://jiehuifang.github.io/">back to the contents</a>
+        </p>
+        <br>
+        <div>
+            <textarea id="trade_code" rows="5" cols="30" placeholder="input code" v-model="inputCodes"></textarea>
+        </div>
+        <br>
+        <div>
+            <!-- button -->
+            <button @click="trade_refresh()">refresh</button>
+            <button @click="stopInterval()">stop</button>
+        </div>
+        <br>
+        <table v-if="Object.keys(codeList).length!==0">
+            <tr v-for="(value,key) in codeList">
+                <td>{{key}}</td>
+                <td>{{value}}</td>
+            </tr>
+        </table>
     </div>
-    <br>
-    <div>
-        <!-- button -->
-        <button @click="trade_refresh()">refresh</button>
-        <button @click="stopInterval()">stop</button>
-    </div>
-    <br>
-    <table v-if="Object.keys(codeList).length!==0">
-        <tr v-for="(value,key) in codeList">
-            <td>{{key}}</td>
-            <td>{{value}}</td>
-        </tr>
-    </table>
-</div>
 </body>
 <script>
     let app = new Vue({
@@ -95,4 +97,5 @@
         }
     });
 </script>
+
 </html>
