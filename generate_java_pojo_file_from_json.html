@@ -108,17 +108,21 @@
                     handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k][0] });
                 }
             } else if (typeof (obj[k]) == 'object') {
-                for (kk in obj[k]) {
-                    if (!isNaN(Number(kk))) {
-                        isMap = true;
-                        break;
-                    }
-                }
-                if (isMap) {
-                    result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
+                if (obj[k] == null) {
+                    result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
                 } else {
-                    result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix + between_word_symbol + k + java_line_end_symbol;
-                    handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k] });
+                    for (kk in obj[k]) {
+                        if (!isNaN(Number(kk))) {
+                            isMap = true;
+                            break;
+                        }
+                    }
+                    if (isMap) {
+                        result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
+                    } else {
+                        result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix + between_word_symbol + k + java_line_end_symbol;
+                        handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k] });
+                    }
                 }
             } else {
                 result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
