@@ -245,7 +245,7 @@
                 script.type = 'text/javascript';
                 if (src !== null) {
                     script.src = src;
-                    script.onload = function () {
+                    script.onload = function() {
                         if (!this.readyState || this.readyState === 'loaded' || this.readyState === 'complete') {
                             script.onload = null;
                             if (outside_schema !== undefined) {
@@ -263,7 +263,7 @@
                 let t = this;
                 let f = file.target.files[0];
                 let reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = function(e) {
                     t.load_schema_script(t, null, e.target.result + "");
                 }
                 reader.readAsText(f);
@@ -282,8 +282,10 @@
                     let tag = file.name.split('.')[0];
                     Vue.set(t.file_name, id + "_" + tag, tag);
                     let reader = new FileReader();
-                    reader.onload = function (e) {
-                        let data = XLSX.read(e.target.result, { type: 'binary' });
+                    reader.onload = function(e) {
+                        let data = XLSX.read(e.target.result, {
+                            type: 'binary'
+                        });
                         Vue.set(t.file_data, id + "_" + tag, XLSX.utils.sheet_to_json(data.Sheets[data.SheetNames[0]]));
                     };
                     reader.readAsBinaryString(file);

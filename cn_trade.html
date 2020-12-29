@@ -19,8 +19,7 @@
         </p>
         <br>
         <div>
-            <textarea id="trade_code" rows="5" cols="30" placeholder="prefix(s_sh|s_sz) + Ticker Symbol"
-                v-model="inputCodes"></textarea>
+            <textarea id="trade_code" rows="5" cols="30" placeholder="prefix(s_sh|s_sz) + Ticker Symbol" v-model="inputCodes"></textarea>
         </div>
         <br>
         <div>
@@ -45,7 +44,7 @@
             codeList: {},
             instance: axios.create({
                 //腾讯 tx
-                baseURL: 'https://qt.gtimg.cn'//v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
+                baseURL: 'https://qt.gtimg.cn' //v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
             }),
             refreshInterval: null,
         },

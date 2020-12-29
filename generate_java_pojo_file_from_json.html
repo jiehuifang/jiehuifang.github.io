@@ -22,6 +22,7 @@
         <br>
         <div>
             <!-- button -->
+            <button onclick="format()">format</button>
             <button onclick="generate()">generate</button>
             <button onclick="clean()">clean</button>
         </div>
@@ -55,12 +56,18 @@
         document.getElementById("json_schema").value = '';
     }
 
+    // format json
+    function format() {
+        let source_text = document.getElementById("json_schema").value;
+        document.getElementById("json_schema").value = JSON.stringify(JSON.parse(source_text), null, 4);
+    }
+
     // replace placeholder function
-    String.prototype.format = function () {
+    String.prototype.format = function() {
         if (arguments.length == 0) return this;
         let param = arguments[0];
         let s = this;
-        if (typeof (param) == 'object') {
+        if (typeof(param) == 'object') {
             for (let k in param)
                 s = s.replace(new RegExp("\\{" + k + "\\}", "g"), param[k]);
         } else {
@@ -76,7 +83,10 @@
             let json_schema_text = document.getElementById("json_schema").value;
             let json_schema_obj = JSON.parse(json_schema_text);
             handle_stack = [];
-            handle_stack.push({ "name": "Root", "obj": json_schema_obj });
+            handle_stack.push({
+                "name": "Root",
+                "obj": json_schema_obj
+            });
             let java_schema_text = "";
             while (handle_stack.length > 0) {
                 java_schema_text = java_schema_text + packageJavaObject(handle_stack.pop()) + single_class_symbol;
@@ -89,25 +99,31 @@
     }
 
     // package java object
-    function packageJavaObject({ name, obj }) {
+    function packageJavaObject({
+        name,
+        obj
+    }) {
         let result = class_type.format(name);
         let isMap = false;
         for (let k in obj) {
-            if (typeof (obj[k]) == 'string')
+            if (typeof(obj[k]) == 'string')
                 result = result + java_tab_symbol + string_type + k + java_line_end_symbol;
-            else if (typeof (obj[k]) == 'boolean')
+            else if (typeof(obj[k]) == 'boolean')
                 result = result + java_tab_symbol + boolean_type + k + java_line_end_symbol;
-            else if (typeof (obj[k]) == 'number')
+            else if (typeof(obj[k]) == 'number')
                 if (obj[k].toString().includes("."))
                     result = result + java_tab_symbol + double_type + k + java_line_end_symbol;
                 else
                     result = result + java_tab_symbol + integer_type + k + java_line_end_symbol;
             else if (obj[k] instanceof Array) {
                 result = result + java_tab_symbol + list_type + k + java_line_end_symbol;
-                if (typeof (obj[k][0]) == 'object') {
-                    handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k][0] });
+                if (typeof(obj[k][0]) == 'object') {
+                    handle_stack.push({
+                        "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix,
+                        "obj": obj[k][0]
+                    });
                 }
-            } else if (typeof (obj[k]) == 'object') {
+            } else if (typeof(obj[k]) == 'object') {
                 if (obj[k] == null) {
                     result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
                 } else {
@@ -121,7 +137,10 @@
                         result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
                     } else {
                         result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix + between_word_symbol + k + java_line_end_symbol;
-                        handle_stack.push({ "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix, "obj": obj[k] });
+                        handle_stack.push({
+                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix,
+                            "obj": obj[k]
+                        });
                     }
                 }
             } else {
