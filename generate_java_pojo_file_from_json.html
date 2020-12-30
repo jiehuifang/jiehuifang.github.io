@@ -40,16 +40,20 @@
     const object_type = "private Object ";
 
     // Java Class Constant Area
-    const class_type = "public class {0} {\n\n";
+    const class_type = "public class %0% {\n\n";
     const java_line_end_symbol = ";\n\n";
     const java_class_file_end_symbol = "}";
     const java_tab_symbol = "    ";
-    const java_item_class_suffix = "Dto";
+    const java_dto_class_suffix = "Dto";
+    const java_map_class_suffix = "Map";
+    const java_map_value_class_suffix = "Value"
     const single_class_symbol = "\n\n";
     const between_word_symbol = " ";
+    const no_java_field_regexp = /^(([a-z]+[0-9]+)|([0-9]+[a-z]+))[a-z0-9]*$/i;
 
     //global var
     let handle_stack;
+    let generate_compile_record;
 
     function clean() {
         document.getElementById("java_schema").innerHTML = '';
@@ -69,10 +73,10 @@
         let s = this;
         if (typeof(param) == 'object') {
             for (let k in param)
-                s = s.replace(new RegExp("\\{" + k + "\\}", "g"), param[k]);
+                s = s.replace(new RegExp("\\%" + k + "\\%", "g"), param[k]);
         } else {
             for (let i = 0; i < arguments.length; i++)
-                s = s.replace(new RegExp("\\{" + i + "\\}", "g"), arguments[i]);
+                s = s.replace(new RegExp("\\%" + i + "\\%", "g"), arguments[i]);
         }
         return s;
     }
@@ -83,13 +87,18 @@
             let json_schema_text = document.getElementById("json_schema").value;
             let json_schema_obj = JSON.parse(json_schema_text);
             handle_stack = [];
+            generate_compile_record = {};
             handle_stack.push({
                 "name": "Root",
                 "obj": json_schema_obj
             });
             let java_schema_text = "";
+            let temp;
             while (handle_stack.length > 0) {
-                java_schema_text = java_schema_text + packageJavaObject(handle_stack.pop()) + single_class_symbol;
+                temp = packageJavaObject(handle_stack.pop());
+                if (temp != null) {
+                    java_schema_text = java_schema_text + temp + single_class_symbol;
+                }
             }
             document.getElementById("java_schema").innerHTML = java_schema_text;
         } catch (e) {
@@ -104,7 +113,7 @@
         obj
     }) {
         let result = class_type.format(name);
-        let isMap = false;
+        let isMap;
         for (let k in obj) {
             if (typeof(obj[k]) == 'string')
                 result = result + java_tab_symbol + string_type + k + java_line_end_symbol;
@@ -118,35 +127,68 @@
             else if (obj[k] instanceof Array) {
                 result = result + java_tab_symbol + list_type + k + java_line_end_symbol;
                 if (typeof(obj[k][0]) == 'object') {
-                    handle_stack.push({
-                        "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix,
-                        "obj": obj[k][0]
-                    });
+                    if (name.endsWith(java_map_class_suffix)) {
+                        handle_stack.push({
+                            "name": name + java_map_value_class_suffix,
+                            "obj": obj[k][0]
+                        });
+                    } else {
+                        handle_stack.push({
+                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix,
+                            "obj": obj[k][0]
+                        });
+                    }
                 }
             } else if (typeof(obj[k]) == 'object') {
-                if (obj[k] == null) {
+                if (obj[k] == null || Object.keys(obj[k]).length == 0) {
                     result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
                 } else {
+                    isMap = false;
                     for (kk in obj[k]) {
                         if (!isNaN(Number(kk))) {
+                            isMap = true;
+                            break;
+                        }
+                        if (no_java_field_regexp.test(kk)) {
                             isMap = true;
                             break;
                         }
                     }
                     if (isMap) {
                         result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
-                    } else {
-                        result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix + between_word_symbol + k + java_line_end_symbol;
                         handle_stack.push({
-                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_item_class_suffix,
+                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_map_class_suffix,
                             "obj": obj[k]
                         });
+                    } else {
+                        result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix + between_word_symbol + k + java_line_end_symbol;
+                        if (name.endsWith(java_map_class_suffix)) {
+                            handle_stack.push({
+                                "name": name + java_map_value_class_suffix,
+                                "obj": obj[k]
+                            });
+                        } else {
+                            handle_stack.push({
+                                "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix,
+                                "obj": obj[k]
+                            });
+                        }
                     }
                 }
             } else {
                 result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
             }
         }
+        if (name.endsWith(java_map_class_suffix)) {
+            return null;
+        }
+        if (generate_compile_record[name] != undefined) {
+            return null;
+        } else {
+            generate_compile_record[name] = 1;
+            return result + java_class_file_end_symbol;
+        }
+
         return result + java_class_file_end_symbol;
     }
 </script>
