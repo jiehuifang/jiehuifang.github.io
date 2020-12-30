@@ -62,8 +62,13 @@
 
     // format json
     function format() {
-        let source_text = document.getElementById("json_schema").value;
-        document.getElementById("json_schema").value = JSON.stringify(JSON.parse(source_text), null, 4);
+        try {
+            let source_text = document.getElementById("json_schema").value;
+            document.getElementById("json_schema").value = JSON.stringify(JSON.parse(source_text), null, 4);
+        } catch (e) {
+            console.log(e);
+            alert("illegal json schema");
+        }
     }
 
     // replace placeholder function
