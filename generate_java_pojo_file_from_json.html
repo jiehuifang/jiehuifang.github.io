@@ -29,15 +29,20 @@
     </div>
 </body>
 <script>
-    // Java Type Constant Area
-    const private_access_type = "private ";
-    const integer_type = "private Integer ";
-    const double_type = "private Double ";
-    const boolean_type = "private Boolean ";
-    const string_type = "private String ";
-    const list_type = "private List ";
-    const map_type = "private Map ";
-    const object_type = "private Object ";
+    // Java Access Type
+    const private_access_type = "private";
+
+    // Java Type
+    const integer_type = "Integer";
+    const double_type = "Double";
+    const boolean_type = "Boolean";
+    const string_type = "String";
+    const object_type = "Object";
+
+    // have specify handle type
+    const list_type = "List";
+    const map_type = "Map";
+    const dto_type = "Dto";
 
     // Java Class Constant Area
     const class_type = "public class %0% {\n\n";
@@ -46,7 +51,6 @@
     const java_tab_symbol = "    ";
     const java_dto_class_suffix = "Dto";
     const java_map_class_suffix = "Map";
-    const java_map_value_class_suffix = "Value"
     const single_class_symbol = "\n\n";
     const between_word_symbol = " ";
     const no_java_field_regexp = /^(([a-z]+[0-9]+)|([0-9]+[a-z]+))[a-z0-9]*$/i;
@@ -55,6 +59,7 @@
     let handle_stack;
     let generate_compile_record;
 
+    // clean record
     function clean() {
         document.getElementById("java_schema").innerHTML = '';
         document.getElementById("json_schema").value = '';
@@ -112,89 +117,124 @@
         }
     }
 
+    // is collect result
+    function isCollectResult(className) {
+        if (isMapName(className)) {
+            return false;
+        }
+        if (generate_compile_record[className] != undefined) {
+            return false;
+        } else {
+            generate_compile_record[className] = 1;
+            return true
+        }
+    }
+
+    // package type info
+    function packageTypeInfo(className, field, fieldType) {
+        if (fieldType == list_type) {
+            return list_type + "<%" + fixHandleTypeName(className, field, fieldType) + "%>";
+        } else if (fieldType == map_type) {
+            // json key must be string
+            return map_type + "<String, %" + fixHandleTypeName(className, field, fieldType) + "%>";
+        } else if (fieldType == dto_type) {
+            return fixHandleTypeName(className, field, fieldType);
+        } else {
+            return fieldType;
+        }
+    }
+
+    // get java type info
+    function getJavaTypeInfo(obj, field) {
+        if (typeof(obj[field]) == 'string') {
+            return string_type;
+        } else if (typeof(obj[field]) == 'boolean') {
+            return boolean_type;
+        } else if (typeof(obj[field]) == 'number') {
+            if (obj[field].toString().includes(".")) {
+                return double_type;
+            } else {
+                return integer_type;
+            }
+        } else if (obj[field] instanceof Array) {
+            return list_type;
+        } else {
+            // js object
+            return isDtoOrMapOrObj(obj, field);
+        }
+    }
+
+    // is dto or map or object
+    function isDtoOrMapOrObj(obj, field) {
+        let isMap = false;
+        if (obj[field] == null || Object.keys(obj[field]).length == 0) {
+            return object_type;
+        } else {
+            for (innerField in obj[field]) {
+                if (!isNaN(Number(innerField))) {
+                    isMap = true;
+                    break;
+                }
+                if (no_java_field_regexp.test(innerField)) {
+                    isMap = true;
+                    break;
+                }
+            }
+            return isMap ? map_type : dto_type;
+        }
+    }
+
+    // is map name now
+    function isMapName(className) {
+        return className.endsWith(java_map_class_suffix);
+    }
+
+    // fix handle type name
+    function fixHandleTypeName(className, field, fieldType) {
+        let prefix = field.substring(0, 1).toUpperCase() + field.substring(1);
+        if (fieldType == map_type) {
+            return prefix + java_map_class_suffix;
+        } else if (fieldType == dto_type && isMapName(className)) {
+            return className + java_dto_class_suffix;
+        } else if (fieldType == dto_type && !isMapName(className)) {
+            return prefix + java_dto_class_suffix;
+        } else if (fieldType == list_type) {
+            return prefix + java_dto_class_suffix;
+        }
+        // illegal call function default return type
+        return fieldType;
+    }
+
+    // push handle obj
+    function pushHandle(className, obj, field, fieldType) {
+        let handle = {};
+        if (fieldType == map_type || fieldType == dto_type) {
+            handle["name"] = fixHandleTypeName(className, field, fieldType)
+            handle["obj"] = obj[field];
+        } else if (fieldType == list_type && obj[field].length > 0) {
+            // default list item type is dto not map
+            handle["name"] = fixHandleTypeName(className, field, fieldType);
+            // default only handle frist element
+            handle["obj"] = obj[field][0];
+        }
+        if (Object.keys(handle).length > 0) {
+            handle_stack.push(handle);
+        }
+    }
+
     // package java object
     function packageJavaObject({
         name,
         obj
     }) {
         let result = class_type.format(name);
-        let isMap;
-        for (let k in obj) {
-            if (typeof(obj[k]) == 'string')
-                result = result + java_tab_symbol + string_type + k + java_line_end_symbol;
-            else if (typeof(obj[k]) == 'boolean')
-                result = result + java_tab_symbol + boolean_type + k + java_line_end_symbol;
-            else if (typeof(obj[k]) == 'number')
-                if (obj[k].toString().includes("."))
-                    result = result + java_tab_symbol + double_type + k + java_line_end_symbol;
-                else
-                    result = result + java_tab_symbol + integer_type + k + java_line_end_symbol;
-            else if (obj[k] instanceof Array) {
-                result = result + java_tab_symbol + list_type + k + java_line_end_symbol;
-                if (typeof(obj[k][0]) == 'object') {
-                    if (name.endsWith(java_map_class_suffix)) {
-                        handle_stack.push({
-                            "name": name + java_map_value_class_suffix,
-                            "obj": obj[k][0]
-                        });
-                    } else {
-                        handle_stack.push({
-                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix,
-                            "obj": obj[k][0]
-                        });
-                    }
-                }
-            } else if (typeof(obj[k]) == 'object') {
-                if (obj[k] == null || Object.keys(obj[k]).length == 0) {
-                    result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
-                } else {
-                    isMap = false;
-                    for (kk in obj[k]) {
-                        if (!isNaN(Number(kk))) {
-                            isMap = true;
-                            break;
-                        }
-                        if (no_java_field_regexp.test(kk)) {
-                            isMap = true;
-                            break;
-                        }
-                    }
-                    if (isMap) {
-                        result = result + java_tab_symbol + map_type + k + java_line_end_symbol;
-                        handle_stack.push({
-                            "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_map_class_suffix,
-                            "obj": obj[k]
-                        });
-                    } else {
-                        result = result + java_tab_symbol + private_access_type + k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix + between_word_symbol + k + java_line_end_symbol;
-                        if (name.endsWith(java_map_class_suffix)) {
-                            handle_stack.push({
-                                "name": name + java_map_value_class_suffix,
-                                "obj": obj[k]
-                            });
-                        } else {
-                            handle_stack.push({
-                                "name": k.substring(0, 1).toUpperCase() + k.substring(1) + java_dto_class_suffix,
-                                "obj": obj[k]
-                            });
-                        }
-                    }
-                }
-            } else {
-                result = result + java_tab_symbol + object_type + k + java_line_end_symbol;
-            }
+        let typeTemp;
+        for (let field in obj) {
+            typeTemp = getJavaTypeInfo(obj, field);
+            result = result + java_tab_symbol + private_access_type + between_word_symbol + packageTypeInfo(name, field, typeTemp) + between_word_symbol + field + java_line_end_symbol;
+            pushHandle(name, obj, field, typeTemp);
         }
-        if (name.endsWith(java_map_class_suffix)) {
-            return null;
-        }
-        if (generate_compile_record[name] != undefined) {
-            return null;
-        } else {
-            generate_compile_record[name] = 1;
-            return result + java_class_file_end_symbol;
-        }
-
-        return result + java_class_file_end_symbol;
+        return isCollectResult(name) ? result + java_class_file_end_symbol : null;
     }
 </script>
 
