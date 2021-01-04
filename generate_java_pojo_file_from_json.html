@@ -60,6 +60,10 @@
     let generate_compile_record;
     let replace_symbol;
 
+    //calc constant
+    let listAppendTemp = "List<%0%>";
+    let mapAppendTemp = "Map<String, %0%>";
+
     // clean record
     function clean() {
         document.getElementById("java_schema").innerHTML = '';
@@ -143,11 +147,9 @@
 
     // package type info
     function packageTypeInfo(className, field, fieldType) {
-        if (fieldType == list_type) {
-            return list_type + "<%" + fixHandleTypeName(className, field, fieldType) + "%>";
-        } else if (fieldType == map_type) {
+        if (fieldType == list_type || fieldType == map_type) {
             // json key must be string
-            return map_type + "<String, %" + fixHandleTypeName(className, field, fieldType) + "%>";
+            return "%" + fixHandleTypeName(className, field, fieldType) + "%";
         } else if (fieldType == dto_type) {
             return fixHandleTypeName(className, field, fieldType);
         } else {
@@ -220,20 +222,27 @@
     function pushHandle(className, obj, field, fieldType) {
         let handle = {};
         let tempName = fixHandleTypeName(className, field, fieldType);
-        if (fieldType == map_type || fieldType == dto_type) {
+
+        let initTemp = "%0%";
+        let handleTemp = {};
+        while (fieldType == map_type || fieldType == list_type) {
+            if (fieldType == list_type) {
+                obj = obj[Object.keys(obj)[0]];
+                initTemp = initTemp.format(listAppendTemp);
+            } else {
+                handleTemp["name"] = fixHandleTypeName(className, Object.keys(obj)[0], fieldType);
+                handleTemp["obj"] = obj[Object.keys(obj)[0]];
+                obj = obj[Object.keys(obj)[0]];
+                initTemp = initTemp.format(mapAppendTemp);
+            }
+            fieldType = getJavaTypeInfo(obj, Object.keys(obj)[0]);
+        }
+        if (fieldType == dto_type) {
             handle["name"] = tempName;
             handle["obj"] = obj[field];
-            replace_symbol[tempName] = tempName;
-        } else if (fieldType == list_type && obj[field].length > 0) {
-            // default only handle frist element
-            let itemType = getJavaTypeInfo(obj[field], 0);
-            if (itemType == dto_type || itemType == map_type || itemType == list_type) {
-                handle["name"] = tempName;
-                handle["obj"] = obj[field][0];
-                replace_symbol[tempName] = tempName;
-            } else {
-                replace_symbol[tempName] = itemType;
-            }
+            replace_symbol[tempName] = initTemp.format(tempName);
+        } else {
+            replace_symbol[tempName] = initTemp.format(fieldType);
         }
         if (Object.keys(handle).length > 0) {
             handle_stack.push(handle);
