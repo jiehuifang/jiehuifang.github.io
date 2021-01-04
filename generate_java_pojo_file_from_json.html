@@ -58,6 +58,7 @@
     //global var
     let handle_stack;
     let generate_compile_record;
+    let replace_symbol;
 
     // clean record
     function clean() {
@@ -98,6 +99,7 @@
             let json_schema_obj = JSON.parse(json_schema_text);
             handle_stack = [];
             generate_compile_record = {};
+            replace_symbol = {};
             handle_stack.push({
                 "name": "Root",
                 "obj": json_schema_obj
@@ -110,7 +112,7 @@
                     java_schema_text = java_schema_text + temp + single_class_symbol;
                 }
             }
-            document.getElementById("java_schema").innerHTML = java_schema_text;
+            document.getElementById("java_schema").innerHTML = replaceTempSymbol(java_schema_text);
         } catch (e) {
             console.log(e);
             alert("illegal json schema");
@@ -128,6 +130,15 @@
             generate_compile_record[className] = 1;
             return true
         }
+    }
+
+    // replace temp symbol
+    function replaceTempSymbol(javaSchemaText) {
+        let tempText = javaSchemaText;
+        while (tempText.includes("%")) {
+            tempText = javaSchemaText.format(replace_symbol);
+        }
+        return tempText;
     }
 
     // package type info
@@ -200,22 +211,29 @@
             return prefix + java_dto_class_suffix;
         } else if (fieldType == list_type) {
             return prefix + java_dto_class_suffix;
+        } else {
+            return fieldType;
         }
-        // illegal call function default return type
-        return fieldType;
     }
 
     // push handle obj
     function pushHandle(className, obj, field, fieldType) {
         let handle = {};
+        let tempName = fixHandleTypeName(className, field, fieldType);
         if (fieldType == map_type || fieldType == dto_type) {
-            handle["name"] = fixHandleTypeName(className, field, fieldType)
+            handle["name"] = tempName;
             handle["obj"] = obj[field];
+            replace_symbol[tempName] = tempName;
         } else if (fieldType == list_type && obj[field].length > 0) {
-            // default list item type is dto not map
-            handle["name"] = fixHandleTypeName(className, field, fieldType);
             // default only handle frist element
-            handle["obj"] = obj[field][0];
+            let itemType = getJavaTypeInfo(obj[field], 0);
+            if (itemType == dto_type || itemType == map_type || itemType == list_type) {
+                handle["name"] = tempName;
+                handle["obj"] = obj[field][0];
+                replace_symbol[tempName] = tempName;
+            } else {
+                replace_symbol[tempName] = itemType;
+            }
         }
         if (Object.keys(handle).length > 0) {
             handle_stack.push(handle);
