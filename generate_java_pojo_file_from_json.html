@@ -288,6 +288,32 @@
         }
         return isCollectResult(className) ? result + java_class_file_end_symbol : null;
     }
+    /*
+    1.init handle stack and root handle obj
+    2.handle obj type:dto|map|list
+        dto
+            1.根据json生成pojo,base类型直接渲染,其他类型用placeholder(className+field+fieldType)渲染
+            2.传递obj,className,field,fieldType到分析字段中
+        map
+            1.获取map的第一个键,并获取键值的类型
+            2.传递obj,className,key,keyValueType到分析字段中
+        list
+            1.获取list的第一个值,并获取简直的类型
+            2.传递obj,className,index,indexValueType到分析字段中
+    3.分析字段(fieldType)
+        dto
+            1.存储placeholder(className+field+fieldType)与fieldClassName的映射关系
+            2.fieldClassName入handle stack
+        map
+            1.存储placeholder(className+field+fieldType)与<placeholder(fieldClassName + mapFristKey=(Object.keys(obj[field])[0]) + mapFristKeyType=(obj[field][mapFristKey] )>的映射关系
+            2.fieldClassName,obj(obj[field])入handle stack
+        list
+            1.存储placeholder(className+field+fieldType)与<placeholder(fieldClassName + listFristIndex=(Object.keys(obj[field])[0]) + listFristValueType=(obj[field][listFristIndex]))>的映射关系
+            2.fieldClassName,obj(obj[field])入handle stack
+        base
+            1.存储placeholder(fieldClassName)与fieldType的映射关系
+    4.替换placeHolder
+    */
 </script>
 
 </html>
