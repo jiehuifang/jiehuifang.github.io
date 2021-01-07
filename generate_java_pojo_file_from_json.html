@@ -55,13 +55,10 @@
 
     //global var
     let handle_stack;
-    let generate_compile_record;
     let replace_symbol;
 
-    //calc constant
-    let listAppendTemp = "List<%0%>";
-    let mapAppendTemp = "Map<String, %0%>";
-    let listFristIndex = "FristItem";
+    //temp constant
+    let listFristIndex = 0;
 
     // clean record
     function clean() {
@@ -101,7 +98,6 @@
             let json_schema_text = document.getElementById("json_schema").value;
             let json_schema_obj = JSON.parse(json_schema_text);
             handle_stack = [];
-            generate_compile_record = {};
             replace_symbol = {};
             let rootType = getJavaClassType(json_schema_obj);
             handle_stack.push({
@@ -122,19 +118,6 @@
         } catch (e) {
             console.log(e);
             alert("illegal json schema");
-        }
-    }
-
-    // is collect result
-    function isCollectResult(className) {
-        if (isMapName(className)) {
-            return false;
-        }
-        if (generate_compile_record[className] != undefined) {
-            return false;
-        } else {
-            generate_compile_record[className] = 1;
-            return true
         }
     }
 
@@ -187,11 +170,6 @@
         }
     }
 
-    // is map name now
-    function isMapName(className) {
-        return className.endsWith(java_map_class_suffix);
-    }
-
     // create type placeholder
     function createTypePlaceholder(placeholder) {
         return "%" + placeholder + "%";
@@ -206,16 +184,9 @@
         });
     }
 
-    // generate class name
-    function generateClassName(className, field, fieldType) {
-        let prefix = field.substring(0, 1).toUpperCase() + field.substring(1);
-        switch (fieldType) {
-            case dto_type:
-            case list_type:
-                return prefix + dto_type;
-            case map_type:
-                return prefix + map_type;
-        }
+    // uppercase frist element
+    function upperCaseFristElement(text) {
+        return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 
     // package map type placeholder
@@ -229,30 +200,32 @@
     }
 
     // analysis field info
-    function analysisFieldInfo(className, obj, field, fieldType) {
-        let fieldClassName;
+    function analysisFieldInfo(className, obj, field, fieldType, objType) {
         switch (fieldType) {
             case dto_type:
-                fieldClassName = generateClassName(className, field, fieldType);
+                let fieldClassName = upperCaseFristElement(field) + fieldType;
                 replace_symbol[createTypePlaceholder(className + field + fieldType)] = fieldClassName;
                 pushHandleInfo(fieldClassName, obj[field], fieldType);
                 break;
             case map_type:
+                let fieldClassName = upperCaseFristElement(field) + fieldType;
                 let mapObj = obj[field];
                 let fristKey = Object.keys(mapObj)[0];
                 let fristValueType = getJavaClassType(mapObj[fristKey]);
-                fieldClassName = generateClassName(className, field, fieldType);
-                pushHandleInfo(fieldClassName, mapObj, fristValueType);
                 replace_symbol[createTypePlaceholder(className + field + fieldType)] = packageMapTypePlaceholder(createTypePlaceholder(fieldClassName + fristKey + fristValueType));
+                pushHandleInfo(fieldClassName, mapObj, fieldType);
                 break;
             case list_type:
-                let fristValueType = getJavaClassType(obj[0]);
-                fieldClassName = generateClassName(className, listFristIndex, fieldType);
-                pushHandleInfo(fieldClassName, obj[0], fristValueType);
-                replace_symbol[createTypePlaceholder(className + field + fieldType)] = packageListTypePlaceholder(createTypePlaceholder());
+                let fieldClassName = upperCaseFristElement(field) + fieldType;
+                let listObj = obj[field];
+                let fristValueType = getJavaClassType(listObj[listFristIndex]);
+                replace_symbol[createTypePlaceholder(className + field + fieldType)] = packageListTypePlaceholder(createTypePlaceholder(fieldClassName + listFristIndex + fristValueType));
+                pushHandleInfo(fieldClassName, listObj, fieldType);
                 break;
             default:
-                replace_symbol[createTypePlaceholder(innerClassName)] = fieldType;
+                if (objType == map_type || list_type) {
+                    replace_symbol[createTypePlaceholder(className + field + fieldType)] = fieldType;
+                }
                 break;
         }
     }
@@ -270,50 +243,22 @@
                 for (let field in obj) {
                     fieldType = getJavaClassType(obj[field]);
                     result = result + java_tab_symbol + private_access_type + between_word_symbol + packageTypeInfo(className, field, fieldType) + between_word_symbol + field + java_line_end_symbol;
-                    analysisFieldInfo(className, obj, field, fieldType);
+                    analysisFieldInfo(className, obj, field, fieldType, type);
                 }
-                break;
+                return result + java_class_file_end_symbol;
             case map_type:
                 //only get frist k-v
                 let fristKey = Object.keys(obj)[0];
                 let fristValueType = getJavaClassType(obj[fristKey]);
-                analysisFieldInfo(className, obj, fristKey, fristValueType);
+                analysisFieldInfo(className, obj, fristKey, fristValueType, type);
+                return null;
             case list_type:
                 //only get frist element
-                let fristIndex = Object.keys(obj)[0];
                 let fristValueType = getJavaClassType(obj[fristIndex]);
-                analysisFieldInfo(className, obj, fristIndex, fristValueType);
-            default:
-                break;
+                analysisFieldInfo(className, obj, listFristIndex, fristValueType, type);
+                return null;
         }
-        return isCollectResult(className) ? result + java_class_file_end_symbol : null;
     }
-    /*
-    1.init handle stack and root handle obj
-    2.handle obj type:dto|map|list
-        dto
-            1.根据json生成pojo,base类型直接渲染,其他类型用placeholder(className+field+fieldType)渲染
-            2.传递obj,className,field,fieldType到分析字段中
-        map
-            1.获取map的第一个键,并获取键值的类型
-            2.传递obj,className,key,keyValueType到分析字段中
-        list
-            1.获取list的第一个值,并获取简直的类型
-            2.传递obj,className,index,indexValueType到分析字段中
-    3.分析字段(fieldType)
-        dto
-            1.存储placeholder(className+field+fieldType)与fieldClassName的映射关系
-            2.fieldClassName入handle stack
-        map
-            1.存储placeholder(className+field+fieldType)与<placeholder(fieldClassName + mapFristKey=(Object.keys(obj[field])[0]) + mapFristKeyType=(obj[field][mapFristKey] )>的映射关系
-            2.fieldClassName,obj(obj[field])入handle stack
-        list
-            1.存储placeholder(className+field+fieldType)与<placeholder(fieldClassName + listFristIndex=(Object.keys(obj[field])[0]) + listFristValueType=(obj[field][listFristIndex]))>的映射关系
-            2.fieldClassName,obj(obj[field])入handle stack
-        base
-            1.存储placeholder(fieldClassName)与fieldType的映射关系
-    4.替换placeHolder
-    */
 </script>
 
 </html>
