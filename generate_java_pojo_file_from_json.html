@@ -123,7 +123,10 @@
 
     // replace temp symbol
     function replaceTempSymbol(javaSchemaText) {
-        return javaSchemaText.format(replace_symbol);
+        while (javaSchemaText.includes("%")) {
+            javaSchemaText = javaSchemaText.format(replace_symbol);
+        }
+        return javaSchemaText;
     }
 
     // package type info
@@ -189,6 +192,16 @@
         return text.substring(0, 1).toUpperCase() + text.substring(1);
     }
 
+    // create class name
+    function createClassName(className, field) {
+        if (field == 0) {
+            //list item class name
+            return className + "Item";
+        } else {
+            return upperCaseFristElement(field);
+        }
+    }
+
     // package map type placeholder
     function packageMapTypePlaceholder(placeholder) {
         return "Map<String, " + placeholder + ">";
@@ -201,30 +214,35 @@
 
     // analysis field info
     function analysisFieldInfo(className, obj, field, fieldType, objType) {
+        let fieldClassName;
+        let mapObj;
+        let listObj;
+        let fristKey;
+        let fristValueType;
         switch (fieldType) {
             case dto_type:
-                let fieldClassName = upperCaseFristElement(field) + fieldType;
-                replace_symbol[createTypePlaceholder(className + field + fieldType)] = fieldClassName;
+                fieldClassName = createClassName(className, field) + fieldType;
+                replace_symbol[className + field + fieldType] = fieldClassName;
                 pushHandleInfo(fieldClassName, obj[field], fieldType);
                 break;
             case map_type:
-                let fieldClassName = upperCaseFristElement(field) + fieldType;
-                let mapObj = obj[field];
-                let fristKey = Object.keys(mapObj)[0];
-                let fristValueType = getJavaClassType(mapObj[fristKey]);
-                replace_symbol[createTypePlaceholder(className + field + fieldType)] = packageMapTypePlaceholder(createTypePlaceholder(fieldClassName + fristKey + fristValueType));
+                fieldClassName = createClassName(className, field) + fieldType;
+                mapObj = obj[field];
+                fristKey = Object.keys(mapObj)[0];
+                fristValueType = getJavaClassType(mapObj[fristKey]);
+                replace_symbol[className + field + fieldType] = packageMapTypePlaceholder(createTypePlaceholder(fieldClassName + fristKey + fristValueType));
                 pushHandleInfo(fieldClassName, mapObj, fieldType);
                 break;
             case list_type:
-                let fieldClassName = upperCaseFristElement(field) + fieldType;
-                let listObj = obj[field];
-                let fristValueType = getJavaClassType(listObj[listFristIndex]);
-                replace_symbol[createTypePlaceholder(className + field + fieldType)] = packageListTypePlaceholder(createTypePlaceholder(fieldClassName + listFristIndex + fristValueType));
+                fieldClassName = createClassName(className, field) + fieldType;
+                listObj = obj[field];
+                fristValueType = getJavaClassType(listObj[listFristIndex]);
+                replace_symbol[className + field + fieldType] = packageListTypePlaceholder(createTypePlaceholder(fieldClassName + listFristIndex + fristValueType));
                 pushHandleInfo(fieldClassName, listObj, fieldType);
                 break;
             default:
-                if (objType == map_type || list_type) {
-                    replace_symbol[createTypePlaceholder(className + field + fieldType)] = fieldType;
+                if (objType == map_type || objType == list_type) {
+                    replace_symbol[className + field + fieldType] = fieldType;
                 }
                 break;
         }
@@ -238,6 +256,8 @@
     }) {
         let result = class_type.format(className);
         let fieldType;
+        let fristKey;
+        let fristValueType;
         switch (type) {
             case dto_type:
                 for (let field in obj) {
@@ -248,17 +268,105 @@
                 return result + java_class_file_end_symbol;
             case map_type:
                 //only get frist k-v
-                let fristKey = Object.keys(obj)[0];
-                let fristValueType = getJavaClassType(obj[fristKey]);
+                fristKey = Object.keys(obj)[0];
+                fristValueType = getJavaClassType(obj[fristKey]);
                 analysisFieldInfo(className, obj, fristKey, fristValueType, type);
                 return null;
             case list_type:
                 //only get frist element
-                let fristValueType = getJavaClassType(obj[fristIndex]);
+                fristValueType = getJavaClassType(obj[listFristIndex]);
                 analysisFieldInfo(className, obj, listFristIndex, fristValueType, type);
                 return null;
         }
     }
+    /*
+    json example
+        base java type
+            {
+                "name": "fjh",
+                "age": 18,
+                "score": 99.9,
+                "isSuccess": true,
+                "testNull": null
+            }
+        dto java type
+            {
+                "name": "fjh",
+                "profile": {
+                    "profileId": "abc123",
+                    "profileDetail": {
+                        "detailId": 123,
+                        "content": "bbb"
+                    }
+                }
+            }
+        map java type
+            {
+                "name": "fjh",
+                "simpleMap": {
+                    "id1": 1,
+                    "id2": 2
+                },
+                "mapAndDto": {
+                    "dto1": {
+                        "name": "fjh",
+                        "age": 1
+                    }
+                },
+                "mapAndMap": {
+                    "map1": {
+                        "name1": "fjh"
+                    }
+                },
+                "mapAndMapAndDto": {
+                    "map1": {
+                        "name1": {
+                            "name": "fjh",
+                            "age": 1
+                        }
+                    }
+                }
+            }
+        list java type
+            {
+                "name": "fjh",
+                "intList": [
+                    1,
+                    2
+                ],
+                "objList": [
+                    {
+                        "name": "fjh",
+                        "dtoList": [
+                            "1"
+                        ]
+                    }
+                ],
+                "mapList": [
+                    {
+                        "id1": 1
+                    }
+                ],
+                "mapObjList": [
+                    {
+                        "id1": {
+                            "name": "fjh",
+                            "age": 18
+                        }
+                    }
+                ],
+                "mapObjListList": [
+                    [
+                        {
+                            "id2": {
+                                "name": "fjh",
+                                "address": 18
+                            }
+                        }
+                    ]
+                ]
+            }
+    */
 </script>
 
 </html>
