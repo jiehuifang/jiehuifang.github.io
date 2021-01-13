@@ -45,9 +45,9 @@
     const dto_type = "Dto";
 
     // Java Class Constant Area
-    const class_type = "public class %0% {\n\n";
-    const java_line_end_symbol = ";\n\n";
-    const java_class_file_end_symbol = "}";
+    const class_type = "public class %0% {";
+    const java_line_end_symbol = ";";
+    const java_class_file_end_symbol = "\n}";
     const java_tab_symbol = "    ";
     const single_class_symbol = "\n\n";
     const between_word_symbol = " ";
@@ -262,7 +262,7 @@
             case dto_type:
                 for (let field in obj) {
                     fieldType = getJavaClassType(obj[field]);
-                    result = result + java_tab_symbol + private_access_type + between_word_symbol + packageTypeInfo(className, field, fieldType) + between_word_symbol + field + java_line_end_symbol;
+                    result = result + single_class_symbol + java_tab_symbol + private_access_type + between_word_symbol + packageTypeInfo(className, field, fieldType) + between_word_symbol + field + java_line_end_symbol;
                     analysisFieldInfo(className, obj, field, fieldType, type);
                 }
                 return result + java_class_file_end_symbol;
