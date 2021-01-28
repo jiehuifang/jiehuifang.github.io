@@ -83,7 +83,7 @@
                     Object.keys(t.codeList).forEach((element) => {
                         t.instance.get('/q=' + element).then((res) => {
                             let data = res.data.split('~');
-                            let tx_data = data[3] + '  ' + data[4] + '  ' + data[5] + '%'
+                            let tx_data = data[1] + '  ' + data[3] + '  ' + data[4] + '  ' + data[5] + '%'
                             Vue.set(t.codeList, element, tx_data);
                         }).catch((e) => {
                             console.log(e)
