@@ -116,7 +116,7 @@
             showNotification(msg) {
                 let t = this;
                 if (Notification.permission == "granted") {
-                    t.showWindowNotification();
+                    t.showWindowNotification(msg);
                 } else {
                     console.log("Notification Permission:" + Notification.permission);
                 }
