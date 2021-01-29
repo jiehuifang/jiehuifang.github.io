@@ -89,7 +89,7 @@
                             let tx_data = data[1] + '  ' + data[3] + '  ' + data[4] + '  ' + data[5] + '%'
                             if (element.split(',').length > 1 && data[3] >= element.split(',')[1]) {
                                 console.log(data[1] + "(" + element.split(',')[0] + ") price: " + data[3]);
-                                t.showNotification(data[1] + "(" + element.split(',')[0] + ") price: " + data[3]);
+                                t.showNotification(element.split(',')[0], data[1] + "(" + element.split(',')[0] + ") price: " + data[3]);
                             }
                             Vue.set(t.codeList, element, tx_data);
                         }).catch((e) => {
@@ -101,22 +101,23 @@
                     t.stopInterval();
                 }
             },
-            showWindowNotification(msg) {
-                var notification = new Notification("CnTradeNotification", {
+            showWindowNotification(id, msg) {
+                let notification = new Notification("CnTradeNotification", {
+                    dir: "auto",
                     icon: 'https://github.githubassets.com/favicon.ico',
                     body: msg,
                     renotify: true,
-                    tag: 'CnTradeNotification',
+                    tag: 'CnTradeNotification_' + id,
                     requireInteraction: true
                 });
                 notification.onclick = () => {
                     window.focus();
                 }
             },
-            showNotification(msg) {
+            showNotification(id, msg) {
                 let t = this;
                 if (Notification.permission == "granted") {
-                    t.showWindowNotification(msg);
+                    t.showWindowNotification(id, msg);
                 } else {
                     console.log("Notification Permission:" + Notification.permission);
                 }
