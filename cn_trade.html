@@ -19,7 +19,7 @@
         </p>
         <br>
         <div>
-            <textarea id="trade_code" rows="5" cols="30" placeholder="prefix(s_sh|s_sz) + Ticker Symbol" v-model="inputCodes"></textarea>
+            <textarea id="trade_code" rows="5" cols="30" placeholder="prefix(s_sh|s_sz) + Ticker Symbol,target" v-model="inputCodes"></textarea>
         </div>
         <br>
         <div>
@@ -53,6 +53,9 @@
             let storage = window.localStorage;
             if (!storage) return false;
             t.inputCodes = storage.getItem("web_tool_cn_trade_code");
+            if (undefined !== window.Notification && "granted" !== Notification.permission) {
+                Notification.requestPermission();
+            }
         },
         methods: {
             trade_refresh() {
@@ -81,9 +84,13 @@
                 console.log('start fetch: ' + Object.keys(t.codeList));
                 try {
                     Object.keys(t.codeList).forEach((element) => {
-                        t.instance.get('/q=' + element).then((res) => {
+                        t.instance.get('/q=' + element.split(',')[0]).then((res) => {
                             let data = res.data.split('~');
                             let tx_data = data[1] + '  ' + data[3] + '  ' + data[4] + '  ' + data[5] + '%'
+                            if (element.split(',').length > 1 && data[3] == element.split(',')[1]) {
+                                console.log(data[1] + "(" + element.split(',')[0] + ") price: " + data[3]);
+                                t.showNotification(data[1] + "(" + element.split(',')[0] + ") price: " + data[3]);
+                            }
                             Vue.set(t.codeList, element, tx_data);
                         }).catch((e) => {
                             console.log(e)
@@ -92,6 +99,23 @@
                 } catch (err) {
                     console.log(err);
                     t.stopInterval();
+                }
+            },
+            showWindowNotification(msg) {
+                let notification = new Notification("CnTradeNotification", {
+                    icon: "https://github.githubassets.com/favicon.ico",
+                    body: msg
+                })
+                notification.onclick = () => {
+                    window.focus();
+                }
+            },
+            showNotification(msg) {
+                let t = this;
+                if (Notification.permission == "granted") {
+                    t.showWindowNotification();
+                } else {
+                    console.log("Notification Permission:" + Notification.permission);
                 }
             }
         }
