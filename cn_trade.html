@@ -79,8 +79,31 @@
                     t.refreshInterval = null;
                 }
             },
+            isTradeTime() {
+                let now = new Date();
+                let nowHours = now.getHours();
+                let nowMinutes = now.getMinutes();
+                if (nowHours >= 13 && nowHours <= 15) {
+                    return true;
+                }
+                if (nowHours == 10) {
+                    return true;
+                }
+                if (nowHours == 9 && nowMinutes >= 15) {
+                    return true;
+                }
+                if (nowHours == 11 && nowMinutes <= 30) {
+                    return true;
+                }
+                console.log("not in trade time.")
+                return false;
+            },
             refreshFun() {
                 let t = this;
+                if (!t.isTradeTime()) {
+                    t.stopInterval();
+                    return;
+                }
                 console.log('start fetch: ' + Object.keys(t.codeList));
                 try {
                     Object.keys(t.codeList).forEach((element) => {
