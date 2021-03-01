@@ -100,10 +100,6 @@
             },
             refreshFun() {
                 let t = this;
-                if (!t.isTradeTime()) {
-                    t.stopInterval();
-                    return;
-                }
                 console.log('start fetch: ' + Object.keys(t.codeList));
                 try {
                     Object.keys(t.codeList).forEach((element) => {
@@ -122,6 +118,11 @@
                 } catch (err) {
                     console.log(err);
                     t.stopInterval();
+                }
+                // tradle time filter
+                if (!t.isTradeTime()) {
+                    t.stopInterval();
+                    return;
                 }
             },
             showWindowNotification(id, msg) {
