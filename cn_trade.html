@@ -83,10 +83,10 @@
                 let now = new Date();
                 let nowHours = now.getHours();
                 let nowMinutes = now.getMinutes();
-                if (nowHours >= 13 && nowHours <= 15) {
+                if (nowHours == 10 || nowHours == 13 || nowHours == 14) {
                     return true;
                 }
-                if (nowHours == 10) {
+                if (nowHours == 15 && nowMinutes == 0) {
                     return true;
                 }
                 if (nowHours == 9 && nowMinutes >= 15) {
