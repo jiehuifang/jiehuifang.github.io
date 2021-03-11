@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://jiehuifang.github.io/webTools.css">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 </head>
 
 <body>
@@ -22,11 +23,13 @@
                 <th>exchange rate</th>
                 <th>buy unit</th>
                 <th>sale unit</th>
+                <th>unit_skip</th>
             </tr>
             <tr>
                 <td><input v-model="exchange_rate"></td>
                 <td><input v-model="buy_unit"></td>
                 <td><input v-model="sale_unit"></td>
+                <td><input v-model="unit_skip"></td>
             </tr>
         </table>
         <hr>
@@ -40,23 +43,119 @@
                 <td>{{(isNaN(profit_amount) || profit_amount == 0) ? 0 : profit_amount}}</td>
             </tr>
         </table>
+        <hr>
+        <div id="appChartDiv" class="appChart">
+            <canvas id="saleAndProfitChart"></canvas>
+        </div>
     </div>
 </body>
 <script>
     const SERVICE_RATE = 0.96525;
+    let chart_instance;
     let app = new Vue({
         el: "#app",
         data: {
             "exchange_rate": 0,
             "buy_unit": 0,
-            "sale_unit": 0
+            "sale_unit": 0,
+            "unit_skip": 0.1,
+            "sale_unit_rang": [],
+            "profit_amount_rang": [],
+            "profit_rate_rang": []
+        },
+        watch: {
+            sale_unit() {
+                this.update_chart();
+            },
+            unit_skip() {
+                this.update_chart();
+            },
+            exchange_rate() {
+                this.update_chart();
+            },
+            buy_unit() {
+                this.update_chart();
+            }
         },
         computed: {
             profit_rate() {
-                return (((SERVICE_RATE * parseFloat(this.sale_unit)) / (parseFloat(this.buy_unit) * parseFloat(this.exchange_rate)) - 1).toFixed(4) * 100).toFixed(2);
+                return this.calc_rate(this.exchange_rate, this.buy_unit, this.sale_unit);
             },
             profit_amount() {
-                return ((SERVICE_RATE * parseFloat(this.sale_unit)) - (parseFloat(this.buy_unit) * parseFloat(this.exchange_rate))).toFixed(2);
+                return this.calc_amount(this.exchange_rate, this.buy_unit, this.sale_unit);
+            }
+        },
+        methods: {
+            update_chart() {
+                this.sale_unit_rang = this.sale_rang();
+                this.profit_amount_rang = this.profit_rang(this.calc_amount);
+                this.profit_rate_rang = this.profit_rang(this.calc_rate);
+                this.draw_chart();
+            },
+            calc_rate(exchange_rate, buy_unit, sale_unit) {
+                return (((SERVICE_RATE * parseFloat(sale_unit)) / (parseFloat(buy_unit) * parseFloat(exchange_rate)) - 1).toFixed(4) * 100).toFixed(2);
+            },
+            calc_amount(exchange_rate, buy_unit, sale_unit) {
+                return ((SERVICE_RATE * parseFloat(sale_unit)) - (parseFloat(buy_unit) * parseFloat(exchange_rate))).toFixed(2);
+            },
+            sale_rang() {
+                let rang = [];
+                let sale_unit = parseFloat(this.sale_unit);
+                rang.push(sale_unit.toFixed(2));
+                let temp_sale = sale_unit;
+                for (let i = 0; i < 5; i++) {
+                    temp_sale = temp_sale - parseFloat(this.unit_skip);
+                    rang.push(temp_sale.toFixed(2));
+                }
+                temp_sale = sale_unit;
+                for (let i = 0; i < 5; i++) {
+                    temp_sale = temp_sale + parseFloat(this.unit_skip);
+                    rang.push(temp_sale.toFixed(2));
+                }
+                rang.sort();
+                return rang;
+            },
+            profit_rang(fun) {
+                let rang = [];
+                this.sale_unit_rang.forEach(element => {
+                    rang.push(fun(this.exchange_rate, this.buy_unit, element));
+                });
+                return rang;
+            },
+            draw_chart() {
+                if (chart_instance != undefined) {
+                    chart_instance.destroy();
+                }
+                chart_instance = new Chart(document.getElementById('saleAndProfitChart'), {
+                    type: 'bar',
+                    data: {
+                        datasets: [{
+                            label: 'profit amount',
+                            data: this.profit_amount_rang,
+                            backgroundColor: 'rgb(0, 0, 255)',
+                            borderColor: 'rgb(0, 0, 255)',
+                            pointHoverBorderColor: 'rgb(0, 0, 0)',
+                            pointHoverBackgroundColor: 'rgb(0, 0, 0)'
+                        }, {
+                            label: 'profit rate',
+                            data: this.profit_rate_rang,
+                            type: 'line',
+                            fill: false,
+                            borderCapStyle: 'round',
+                            borderColor: 'rgb(255, 0, 0)',
+                            pointHoverBorderColor: 'rgb(0, 0, 0)',
+                            pointHoverBackgroundColor: 'rgb(0, 0, 0)'
+                        }],
+                        labels: this.sale_unit_rang
+                    },
+                    options: {
+                        responsive: true,
+                        title: {
+                            display: true,
+                            text: 'sale - profit relation'
+                        }
+                    }
+                });
             }
         }
     });
