@@ -101,18 +101,18 @@
             sale_rang() {
                 let rang = [];
                 let sale_unit = parseFloat(this.sale_unit);
-                rang.push(sale_unit.toFixed(2));
+                rang.push(parseFloat(sale_unit.toFixed(2)));
                 let temp_sale = sale_unit;
                 for (let i = 0; i < 5; i++) {
                     temp_sale = temp_sale - parseFloat(this.unit_skip);
-                    rang.push(temp_sale.toFixed(2));
+                    rang.push(parseFloat(temp_sale.toFixed(2)));
                 }
                 temp_sale = sale_unit;
                 for (let i = 0; i < 5; i++) {
                     temp_sale = temp_sale + parseFloat(this.unit_skip);
-                    rang.push(temp_sale.toFixed(2));
+                    rang.push(parseFloat(temp_sale.toFixed(2)));
                 }
-                rang.sort();
+                rang.sort((a, b) => a - b);
                 return rang;
             },
             profit_rang(fun) {
