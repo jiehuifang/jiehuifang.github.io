@@ -32,7 +32,11 @@
             <tr v-for="(value,key) in codeList">
                 <td> [{{key}}] </td>
                 <td> => </td>
-                <td> [{{value}}] </td>
+                <td> {{value.name}} </td>
+                <td> {{value.price}} </td>
+                <td> {{value.priceFloat}} </td>
+                <td> {{value.priceFloatRate}} </td>
+                <td> {{value.myPriceFloatRate}} </td>
             </tr>
         </table>
     </div>
@@ -109,9 +113,20 @@
                             let element_array = element.split(',');
                             let tx_data;
                             if (element_array.length == 1) {
-                                tx_data = data[1] + '   ' + data[3] + '   ' + data[4] + '   ' + data[5] + '%';
+                                tx_data = {
+                                    "name": data[1],
+                                    "price": data[3],
+                                    "priceFloat": data[4],
+                                    "priceFloatRate": data[5] + "%"
+                                };
                             } else {
-                                tx_data = data[1] + '   ' + data[3] + '   ' + data[4] + '   ' + data[5] + '%' + '   ' + (((data[3] - element_array[1]) / element_array[1]) * 100).toFixed(2) + '%';
+                                tx_data = {
+                                    "name": data[1],
+                                    "price": data[3],
+                                    "priceFloat": data[4],
+                                    "priceFloatRate": data[5] + "%",
+                                    "myPriceFloatRate": (((data[3] - element_array[1]) / element_array[1]) * 100).toFixed(2) + '%'
+                                };
                             }
                             if (element.split(',').length > 1 && data[3] >= element.split(',')[1]) {
                                 console.log(data[1] + "(" + element.split(',')[0] + ") " + data[3] + " " + data[5] + "%");
