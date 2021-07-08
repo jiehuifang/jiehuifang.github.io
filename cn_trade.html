@@ -73,7 +73,7 @@
         },
         computed: {
             added_unit() {
-                return ((parseFloat(this.source_number) * parseFloat(this.source_unit) + parseFloat(this.add_amount)) / (parseFloat(this.source_number) + parseFloat(this.add_amount) / parseFloat(this.target_unit))).toFixed(2);
+                return ((parseFloat(this.source_number) * parseFloat(this.source_unit) + parseFloat(this.add_amount)) / (parseFloat(this.source_number) + parseFloat(this.add_amount) / parseFloat(this.target_unit))).toFixed(3);
             },
             added_rate() {
                 return (((parseFloat(this.target_unit) * parseFloat(this.source_number) + parseFloat(this.add_amount)) / (parseFloat(this.source_number) * parseFloat(this.source_unit) + parseFloat(this.add_amount)) - 1) * 100).toFixed(2);
