@@ -19,6 +19,19 @@
         </p>
         <br>
         <div>
+            <button @click="controlAppendArea()">{{showAppendArea?"hidden":"show"}} append area</button>
+        </div>
+        <br>
+        <div v-if="showAppendArea == true">
+            <input v-model="source_number" placeholder="source number">
+            <input v-model="source_unit" placeholder="source unit">
+            <input v-model="target_unit" placeholder="target unit">
+            <input v-model="add_amount" placeholder="add amount">
+            <p>added unit:{{isNaN(added_unit) ? 0 : added_unit}}</p>
+            <p>added rate:{{isNaN(added_rate) ? 0 : added_rate}}%</p>
+        </div>
+        <br>
+        <div>
             <textarea id="trade_code" rows="5" cols="30" placeholder="prefix(s_sh|s_sz) + Ticker Symbol,target" v-model="inputCodes"></textarea>
         </div>
         <br>
@@ -45,6 +58,11 @@
     let app = new Vue({
         el: "#app",
         data: {
+            source_number: "",
+            source_unit: "",
+            target_unit: "",
+            add_amount: "",
+            showAppendArea: false,
             inputCodes: "",
             codeList: {},
             instance: axios.create({
@@ -52,6 +70,14 @@
                 baseURL: 'https://qt.gtimg.cn' //v_s_sh600108="1~亚盛集团~600108~3.00~-0.10~-3.23~568256~17082~~58.41~GP-A";
             }),
             refreshInterval: null,
+        },
+        computed: {
+            added_unit() {
+                return ((parseFloat(this.source_number) * parseFloat(this.source_unit) + parseFloat(this.add_amount)) / (parseFloat(this.source_number) + parseFloat(this.add_amount) / parseFloat(this.target_unit))).toFixed(2);
+            },
+            added_rate() {
+                return (((parseFloat(this.target_unit) * parseFloat(this.source_number) + parseFloat(this.add_amount)) / (parseFloat(this.source_number) * parseFloat(this.source_unit) + parseFloat(this.add_amount)) - 1) * 100).toFixed(2);
+            }
         },
         created() {
             let t = this;
@@ -63,6 +89,9 @@
             }
         },
         methods: {
+            controlAppendArea() {
+                this.showAppendArea = !this.showAppendArea;
+            },
             trade_refresh() {
                 let t = this;
                 let storage = window.localStorage;
