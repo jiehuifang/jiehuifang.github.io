@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <title>Timer</title>
+    <link rel="icon" type="image/x-icon" class="js-site-favicon" href="https://github.com/favicon.ico">
+    <link rel="stylesheet" href="/webTools.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+</head>
+
+<body>
+    <!-- Timer -->
+    <div id="app">
+        <p>Timer</p>
+        <p>
+            <a href="/index.html">back to the contents</a>
+        </p>
+        <br>
+        <table border="1">
+            <tr>
+                <th>hour</th>
+                <th>minute</th>
+                <th>second</th>
+            </tr>
+            <tr>
+                <td><input v-model="hour"></td>
+                <td><input v-model="minute"></td>
+                <td><input v-model="second"></td>
+            </tr>
+        </table>
+        <button @click="start('plus')">plus</button>
+        <button @click="start('minus')">minus</button>
+        <button @click="stop()">stop</button>
+        <hr>
+        {{core_time}}
+        <br>
+        {{text_time}}
+    </div>
+</body>
+<script>
+    let app = new Vue({
+        el: "#app",
+        data: {
+            hour: 0,
+            minute: 40,
+            second: 0,
+            core_hour: 0,
+            core_minute: 0,
+            core_second: 0,
+            interval: null
+        },
+        computed: {
+            core_time() {
+                let core = 0;
+                core += this.core_hour * 3600;
+                core += this.core_minute * 60;
+                core += this.core_second * 1;
+                return core;
+            },
+            text_time() {
+                let core = this.core_time;
+                let hour_num = parseInt(core / 3600);
+                core = core - hour_num * 3600;
+                let minute_num = parseInt(core / 60);
+                core = core - minute_num * 60;
+                return hour_num + 'hour ' + minute_num + 'minute ' + core + 'second';
+            }
+        },
+        methods: {
+            start(model) {
+                let t = this;
+                if(t.interval !== null) {
+                    alert('already started');
+                    return
+                }
+                t.core_hour = t.hour;
+                t.core_minute = t.minute;
+                t.core_second = t.second;
+                if(model === 'plus') {
+                    t.interval = setInterval(() => {
+                        t.core_second += 1
+                    }, 1000);
+                }else {
+                    t.interval = setInterval(() => {
+                        t.core_second -= 1
+                    }, 1000);
+                }
+            },
+            stop() {
+                let t = this;
+                clearInterval(t.interval);
+                t.interval = null;
+            }
+        }
+    });
+</script>
+
+</html>
