@@ -1,0 +1,10 @@
+{
+    "manifest_version": 2,
+    "name": "web tools",
+    "version": "1.0",
+    "description": "web tools",
+    "browser_action": {
+        "default_icon": "dog.ico",
+        "default_popup": "index.html"
+    }
+}
